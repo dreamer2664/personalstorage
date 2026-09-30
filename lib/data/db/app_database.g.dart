@@ -83,6 +83,21 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
     ),
     defaultValue: const Constant(false),
   );
+  static const VerificationMeta _titleLockedMeta = const VerificationMeta(
+    'titleLocked',
+  );
+  @override
+  late final GeneratedColumn<bool> titleLocked = GeneratedColumn<bool>(
+    'title_locked',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("title_locked" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _categoryLockedMeta = const VerificationMeta(
     'categoryLocked',
   );
@@ -177,6 +192,7 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
     categoryId,
     priority,
     pinned,
+    titleLocked,
     categoryLocked,
     priorityLocked,
     language,
@@ -236,6 +252,15 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
       context.handle(
         _pinnedMeta,
         pinned.isAcceptableOrUnknown(data['pinned']!, _pinnedMeta),
+      );
+    }
+    if (data.containsKey('title_locked')) {
+      context.handle(
+        _titleLockedMeta,
+        titleLocked.isAcceptableOrUnknown(
+          data['title_locked']!,
+          _titleLockedMeta,
+        ),
       );
     }
     if (data.containsKey('category_locked')) {
@@ -327,6 +352,10 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, NoteRow> {
         DriftSqlType.bool,
         data['${effectivePrefix}pinned'],
       )!,
+      titleLocked: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}title_locked'],
+      )!,
       categoryLocked: attachedDatabase.typeMapping.read(
         DriftSqlType.bool,
         data['${effectivePrefix}category_locked'],
@@ -376,6 +405,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
   final String? categoryId;
   final int priority;
   final bool pinned;
+  final bool titleLocked;
   final bool categoryLocked;
   final bool priorityLocked;
   final String language;
@@ -393,6 +423,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     this.categoryId,
     required this.priority,
     required this.pinned,
+    required this.titleLocked,
     required this.categoryLocked,
     required this.priorityLocked,
     required this.language,
@@ -413,6 +444,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     }
     map['priority'] = Variable<int>(priority);
     map['pinned'] = Variable<bool>(pinned);
+    map['title_locked'] = Variable<bool>(titleLocked);
     map['category_locked'] = Variable<bool>(categoryLocked);
     map['priority_locked'] = Variable<bool>(priorityLocked);
     map['language'] = Variable<String>(language);
@@ -436,6 +468,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
           : Value(categoryId),
       priority: Value(priority),
       pinned: Value(pinned),
+      titleLocked: Value(titleLocked),
       categoryLocked: Value(categoryLocked),
       priorityLocked: Value(priorityLocked),
       language: Value(language),
@@ -461,6 +494,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       categoryId: serializer.fromJson<String?>(json['categoryId']),
       priority: serializer.fromJson<int>(json['priority']),
       pinned: serializer.fromJson<bool>(json['pinned']),
+      titleLocked: serializer.fromJson<bool>(json['titleLocked']),
       categoryLocked: serializer.fromJson<bool>(json['categoryLocked']),
       priorityLocked: serializer.fromJson<bool>(json['priorityLocked']),
       language: serializer.fromJson<String>(json['language']),
@@ -481,6 +515,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
       'categoryId': serializer.toJson<String?>(categoryId),
       'priority': serializer.toJson<int>(priority),
       'pinned': serializer.toJson<bool>(pinned),
+      'titleLocked': serializer.toJson<bool>(titleLocked),
       'categoryLocked': serializer.toJson<bool>(categoryLocked),
       'priorityLocked': serializer.toJson<bool>(priorityLocked),
       'language': serializer.toJson<String>(language),
@@ -499,6 +534,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     Value<String?> categoryId = const Value.absent(),
     int? priority,
     bool? pinned,
+    bool? titleLocked,
     bool? categoryLocked,
     bool? priorityLocked,
     String? language,
@@ -514,6 +550,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     categoryId: categoryId.present ? categoryId.value : this.categoryId,
     priority: priority ?? this.priority,
     pinned: pinned ?? this.pinned,
+    titleLocked: titleLocked ?? this.titleLocked,
     categoryLocked: categoryLocked ?? this.categoryLocked,
     priorityLocked: priorityLocked ?? this.priorityLocked,
     language: language ?? this.language,
@@ -533,6 +570,9 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
           : this.categoryId,
       priority: data.priority.present ? data.priority.value : this.priority,
       pinned: data.pinned.present ? data.pinned.value : this.pinned,
+      titleLocked: data.titleLocked.present
+          ? data.titleLocked.value
+          : this.titleLocked,
       categoryLocked: data.categoryLocked.present
           ? data.categoryLocked.value
           : this.categoryLocked,
@@ -557,6 +597,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
           ..write('categoryId: $categoryId, ')
           ..write('priority: $priority, ')
           ..write('pinned: $pinned, ')
+          ..write('titleLocked: $titleLocked, ')
           ..write('categoryLocked: $categoryLocked, ')
           ..write('priorityLocked: $priorityLocked, ')
           ..write('language: $language, ')
@@ -577,6 +618,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
     categoryId,
     priority,
     pinned,
+    titleLocked,
     categoryLocked,
     priorityLocked,
     language,
@@ -596,6 +638,7 @@ class NoteRow extends DataClass implements Insertable<NoteRow> {
           other.categoryId == this.categoryId &&
           other.priority == this.priority &&
           other.pinned == this.pinned &&
+          other.titleLocked == this.titleLocked &&
           other.categoryLocked == this.categoryLocked &&
           other.priorityLocked == this.priorityLocked &&
           other.language == this.language &&
@@ -613,6 +656,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
   final Value<String?> categoryId;
   final Value<int> priority;
   final Value<bool> pinned;
+  final Value<bool> titleLocked;
   final Value<bool> categoryLocked;
   final Value<bool> priorityLocked;
   final Value<String> language;
@@ -629,6 +673,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     this.categoryId = const Value.absent(),
     this.priority = const Value.absent(),
     this.pinned = const Value.absent(),
+    this.titleLocked = const Value.absent(),
     this.categoryLocked = const Value.absent(),
     this.priorityLocked = const Value.absent(),
     this.language = const Value.absent(),
@@ -646,6 +691,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     this.categoryId = const Value.absent(),
     this.priority = const Value.absent(),
     this.pinned = const Value.absent(),
+    this.titleLocked = const Value.absent(),
     this.categoryLocked = const Value.absent(),
     this.priorityLocked = const Value.absent(),
     this.language = const Value.absent(),
@@ -665,6 +711,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     Expression<String>? categoryId,
     Expression<int>? priority,
     Expression<bool>? pinned,
+    Expression<bool>? titleLocked,
     Expression<bool>? categoryLocked,
     Expression<bool>? priorityLocked,
     Expression<String>? language,
@@ -682,6 +729,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
       if (categoryId != null) 'category_id': categoryId,
       if (priority != null) 'priority': priority,
       if (pinned != null) 'pinned': pinned,
+      if (titleLocked != null) 'title_locked': titleLocked,
       if (categoryLocked != null) 'category_locked': categoryLocked,
       if (priorityLocked != null) 'priority_locked': priorityLocked,
       if (language != null) 'language': language,
@@ -701,6 +749,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     Value<String?>? categoryId,
     Value<int>? priority,
     Value<bool>? pinned,
+    Value<bool>? titleLocked,
     Value<bool>? categoryLocked,
     Value<bool>? priorityLocked,
     Value<String>? language,
@@ -718,6 +767,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
       categoryId: categoryId ?? this.categoryId,
       priority: priority ?? this.priority,
       pinned: pinned ?? this.pinned,
+      titleLocked: titleLocked ?? this.titleLocked,
       categoryLocked: categoryLocked ?? this.categoryLocked,
       priorityLocked: priorityLocked ?? this.priorityLocked,
       language: language ?? this.language,
@@ -752,6 +802,9 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
     }
     if (pinned.present) {
       map['pinned'] = Variable<bool>(pinned.value);
+    }
+    if (titleLocked.present) {
+      map['title_locked'] = Variable<bool>(titleLocked.value);
     }
     if (categoryLocked.present) {
       map['category_locked'] = Variable<bool>(categoryLocked.value);
@@ -790,6 +843,7 @@ class NotesCompanion extends UpdateCompanion<NoteRow> {
           ..write('categoryId: $categoryId, ')
           ..write('priority: $priority, ')
           ..write('pinned: $pinned, ')
+          ..write('titleLocked: $titleLocked, ')
           ..write('categoryLocked: $categoryLocked, ')
           ..write('priorityLocked: $priorityLocked, ')
           ..write('language: $language, ')
@@ -3932,6 +3986,7 @@ typedef $$NotesTableCreateCompanionBuilder = NotesCompanion Function({
   Value<String?> categoryId,
   Value<int> priority,
   Value<bool> pinned,
+  Value<bool> titleLocked,
   Value<bool> categoryLocked,
   Value<bool> priorityLocked,
   Value<String> language,
@@ -3949,6 +4004,7 @@ typedef $$NotesTableUpdateCompanionBuilder = NotesCompanion Function({
   Value<String?> categoryId,
   Value<int> priority,
   Value<bool> pinned,
+  Value<bool> titleLocked,
   Value<bool> categoryLocked,
   Value<bool> priorityLocked,
   Value<String> language,
@@ -4129,6 +4185,11 @@ class $$NotesTableFilterComposer extends Composer<_$AppDatabase, $NotesTable> {
 
   ColumnFilters<bool> get pinned => $composableBuilder(
     column: $table.pinned,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get titleLocked => $composableBuilder(
+    column: $table.titleLocked,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -4387,6 +4448,11 @@ class $$NotesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get titleLocked => $composableBuilder(
+    column: $table.titleLocked,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<bool> get categoryLocked => $composableBuilder(
     column: $table.categoryLocked,
     builder: (column) => ColumnOrderings(column),
@@ -4454,6 +4520,11 @@ class $$NotesTableAnnotationComposer
 
   GeneratedColumn<bool> get pinned =>
       $composableBuilder(column: $table.pinned, builder: (column) => column);
+
+  GeneratedColumn<bool> get titleLocked => $composableBuilder(
+    column: $table.titleLocked,
+    builder: (column) => column,
+  );
 
   GeneratedColumn<bool> get categoryLocked => $composableBuilder(
     column: $table.categoryLocked,
@@ -4699,6 +4770,7 @@ class $$NotesTableTableManager
                 Value<String?> categoryId = const Value.absent(),
                 Value<int> priority = const Value.absent(),
                 Value<bool> pinned = const Value.absent(),
+                Value<bool> titleLocked = const Value.absent(),
                 Value<bool> categoryLocked = const Value.absent(),
                 Value<bool> priorityLocked = const Value.absent(),
                 Value<String> language = const Value.absent(),
@@ -4715,6 +4787,7 @@ class $$NotesTableTableManager
                 categoryId: categoryId,
                 priority: priority,
                 pinned: pinned,
+                titleLocked: titleLocked,
                 categoryLocked: categoryLocked,
                 priorityLocked: priorityLocked,
                 language: language,
@@ -4733,6 +4806,7 @@ class $$NotesTableTableManager
                 Value<String?> categoryId = const Value.absent(),
                 Value<int> priority = const Value.absent(),
                 Value<bool> pinned = const Value.absent(),
+                Value<bool> titleLocked = const Value.absent(),
                 Value<bool> categoryLocked = const Value.absent(),
                 Value<bool> priorityLocked = const Value.absent(),
                 Value<String> language = const Value.absent(),
@@ -4749,6 +4823,7 @@ class $$NotesTableTableManager
                 categoryId: categoryId,
                 priority: priority,
                 pinned: pinned,
+                titleLocked: titleLocked,
                 categoryLocked: categoryLocked,
                 priorityLocked: priorityLocked,
                 language: language,

@@ -79,10 +79,12 @@ class EnrichmentService {
     if (changed) await _reanalyze(noteId, retitleLinks: true);
   }
 
-  /// Public entry point after a text edit.
-  Future<void> reanalyze(String noteId) => enqueue('reanalyze:$noteId', () => _reanalyze(noteId));
+  /// Public entry point after a text edit. While the user is typing in a note, pass
+  /// `convertToChecklist: false` so list-like text isn't restructured under their cursor.
+  Future<void> reanalyze(String noteId, {bool convertToChecklist = true}) =>
+      enqueue('reanalyze:$noteId', () => _reanalyze(noteId, convert: convertToChecklist));
 
-  Future<void> _reanalyze(String noteId, {bool retitleLinks = false}) async {
+  Future<void> _reanalyze(String noteId, {bool retitleLinks = false, bool convert = true}) async {
     final d = await repo.loadNote(noteId);
     if (d == null) return;
     final context = d.links
@@ -94,14 +96,14 @@ class EnrichmentService {
       now: DateTime.now(),
       imageCount: d.images.length,
       context: context.isEmpty ? null : context,
-      allowAutoChecklist: d.checklist.isEmpty,
+      allowAutoChecklist: convert && d.checklist.isEmpty,
     );
     await repo.applyAnalysis(noteId, body: d.body, analysis: a, embedding: brain.payload(a));
-    if (a.checklist != null && d.checklist.isEmpty) {
+    if (a.checklist != null && d.checklist.isEmpty && convert) {
       await repo.convertToChecklist(noteId, a.checklist!.items, title: a.checklist!.title);
     }
     final firstLinkTitle = d.links.map((l) => l.title).whereType<String>().firstOrNull;
-    if (retitleLinks && d.kind == NoteKind.link && firstLinkTitle != null) {
+    if (retitleLinks && d.kind == NoteKind.link && firstLinkTitle != null && !d.titleLocked) {
       await repo.setTitle(noteId, firstLinkTitle);
     }
     brain.index.upsert(IndexedNote.fromAnalysis(noteId, a, d.createdAt));

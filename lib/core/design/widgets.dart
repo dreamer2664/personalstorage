@@ -118,7 +118,8 @@ class PsButton extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           if (icon != null) ...[Icon(icon, size: 18, color: fg), const SizedBox(width: 8)],
-          Text(label, style: PsText.headline(fg)),
+          // Flexible: long labels / large accessibility text wrap instead of overflowing.
+          Flexible(child: Text(label, maxLines: 2, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis, style: PsText.headline(fg))),
         ],
       ),
     );

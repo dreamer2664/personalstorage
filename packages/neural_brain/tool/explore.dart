@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print, curly_braces_in_flow_control_structures
 // Developer scratchpad: prints what the brain infers for the sample corpus.
 // Run: dart run tool/explore.dart
 import 'dart:io';

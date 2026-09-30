@@ -144,6 +144,7 @@ class NoteDetail {
     required this.pinned,
     required this.categoryLocked,
     required this.priorityLocked,
+    required this.titleLocked,
     required this.language,
     required this.source,
     required this.createdAt,
@@ -164,6 +165,7 @@ class NoteDetail {
   final bool pinned;
   final bool categoryLocked;
   final bool priorityLocked;
+  final bool titleLocked;
   final String language;
   final String source;
   final DateTime createdAt;

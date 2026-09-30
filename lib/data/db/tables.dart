@@ -17,6 +17,7 @@ class Notes extends Table {
   TextColumn get categoryId => text().nullable()();
   IntColumn get priority => integer().withDefault(const Constant(0))();
   BoolColumn get pinned => boolean().withDefault(const Constant(false))();
+  BoolColumn get titleLocked => boolean().withDefault(const Constant(false))();
   BoolColumn get categoryLocked => boolean().withDefault(const Constant(false))();
   BoolColumn get priorityLocked => boolean().withDefault(const Constant(false))();
   TextColumn get language => text().withDefault(const Constant('und'))();

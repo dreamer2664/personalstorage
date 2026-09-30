@@ -123,7 +123,7 @@ class NoteRepository {
         final keepTitle = body.trim().isEmpty && imageCount > 0;
         await (db.update(db.notes)..where((n) => n.id.equals(id))).write(NotesCompanion(
           body: Value(body),
-          title: keepTitle ? const Value.absent() : Value(analysis.title),
+          title: keepTitle || row.titleLocked ? const Value.absent() : Value(analysis.title),
           kind: Value(kind.name),
           language: Value(analysis.language.code),
           categoryId: row.categoryLocked ? const Value.absent() : Value(analysis.categoryId),
@@ -155,8 +155,14 @@ class NoteRepository {
     await _refreshFts(id);
   }
 
-  Future<void> setTitle(String id, String title) async {
-    await (db.update(db.notes)..where((n) => n.id.equals(id))).write(NotesCompanion(title: Value(title), updatedAt: Value(DateTime.now())));
+  /// Sets the title. A title typed by the user ([lock] = true) survives re-analysis; clearing it
+  /// hands control back to the AI (the next analysis derives a title again).
+  Future<void> setTitle(String id, String title, {bool lock = false}) async {
+    await (db.update(db.notes)..where((n) => n.id.equals(id))).write(NotesCompanion(
+      title: Value(title),
+      titleLocked: Value(lock && title.trim().isNotEmpty),
+      updatedAt: Value(DateTime.now()),
+    ));
     await _refreshFts(id);
   }
 
@@ -574,7 +580,7 @@ class NoteRepository {
 
   String _snippet(String body, String title) {
     var s = body.trim();
-    if (s.startsWith(title) && title.isNotEmpty) s = s.substring(title.length).trim();
+    if (title.isNotEmpty && s.toLowerCase().startsWith(title.toLowerCase())) s = s.substring(title.length).trim();
     s = s.replaceAll(RegExp(r'\s*\n+\s*'), ' · ').replaceAll(RegExp(r'^[-*•]\s*|\[[ xX]?\]\s*'), '');
     return s.length > 140 ? '${s.substring(0, 140)}…' : s;
   }
@@ -602,6 +608,7 @@ class NoteRepository {
       pinned: n.pinned,
       categoryLocked: n.categoryLocked,
       priorityLocked: n.priorityLocked,
+      titleLocked: n.titleLocked,
       language: n.language,
       source: n.source,
       createdAt: n.createdAt,

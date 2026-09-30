@@ -6,8 +6,8 @@ import 'graph_model.dart';
 /// Tunables of the force simulation. Defaults are tuned for node radii of 4-20 world units.
 class ForceLayoutConfig {
   const ForceLayoutConfig({
-    this.repulsion = 1100.0,
-    this.springLength = 62.0,
+    this.repulsion = 1500.0,
+    this.springLength = 74.0,
     this.springStiffness = 0.085,
     this.gravity = 0.030,
     this.clusterGravity = 0.05,

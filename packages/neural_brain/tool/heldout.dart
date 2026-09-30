@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print, curly_braces_in_flow_control_structures
 import 'dart:io';
 import 'package:neural_brain/neural_brain.dart';
 import '../test/support/heldout_notes.dart';

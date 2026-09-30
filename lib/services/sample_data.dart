@@ -12,7 +12,12 @@ class SampleData {
     var n = 0;
     // Oldest first so ULIDs/ordering match the timestamps.
     for (final s in sampleCorpus.reversed) {
-      await capture.capture(CaptureDraft(text: s.text, source: 'sample', createdAt: at.subtract(Duration(minutes: s.minutesAgo))));
+      await capture.capture(CaptureDraft(
+        text: s.text,
+        source: 'sample',
+        createdAt: at.subtract(Duration(minutes: s.minutesAgo)),
+        referenceTime: at, // reminders are relative to *today*, not to the back-dated timestamp
+      ));
       n++;
     }
     return n;

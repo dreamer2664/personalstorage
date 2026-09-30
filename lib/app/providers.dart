@@ -227,3 +227,6 @@ final tasksProvider = StreamProvider<List<TaskInfo>>((ref) => ref.watch(reposito
 final categoryCountsProvider = StreamProvider<Map<String?, int>>((ref) => ref.watch(repositoryProvider).watchCategoryCounts());
 
 final noteCountProvider = StreamProvider<int>((ref) => ref.watch(repositoryProvider).watchNoteCount());
+
+/// Stored edges; the graph screen re-loads when they change.
+final edgesProvider = StreamProvider<List<StoredEdge>>((ref) => ref.watch(repositoryProvider).watchEdges());

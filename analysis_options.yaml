@@ -10,11 +10,16 @@
 include: package:flutter_lints/flutter.yaml
 
 analyzer:
+  language:
+    strict-casts: true
+    strict-raw-types: true
   exclude:
     - build/**
     - android/**
     - ios/**
     - web/**
+    - packages/**          # the package carries its own analysis_options.yaml
+    - '**/*.g.dart'
 
 linter:
   # The lint rules applied to this project can be customized in the

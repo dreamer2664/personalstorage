@@ -20,6 +20,7 @@ class CaptureDraft {
     this.source = 'typed',
     this.acceptChecklistSuggestion = false,
     this.createdAt,
+    this.referenceTime,
   });
 
   final String text;
@@ -31,6 +32,11 @@ class CaptureDraft {
   /// The user tapped "Make checklist" on a low-confidence suggestion.
   final bool acceptChecklistSuggestion;
   final DateTime? createdAt;
+
+  /// "Now" for resolving relative dates ("tomorrow", "Friday"). Defaults to [createdAt]: a note
+  /// written last week saying "tomorrow" means *that* tomorrow. Demo data overrides it so its
+  /// reminders land in the future.
+  final DateTime? referenceTime;
 
   bool get isEmpty => text.trim().isEmpty && imagePaths.isEmpty;
 }
@@ -82,7 +88,7 @@ class CaptureService {
     final now = draft.createdAt ?? DateTime.now();
     final text = draft.text.trim();
 
-    final analysis = await brain.brain.analyze(text, now: now, imageCount: draft.imagePaths.length);
+    final analysis = await brain.brain.analyze(text, now: draft.referenceTime ?? now, imageCount: draft.imagePaths.length);
     final suggestion = analysis.checklistSuggestion;
     final makeChecklist = analysis.checklist == null && draft.acceptChecklistSuggestion && suggestion != null;
     final checklist = analysis.checklist ?? (makeChecklist ? suggestion : null);
