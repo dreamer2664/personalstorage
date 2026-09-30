@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:neural_brain/neural_brain.dart';
-import 'package:neural_brain/src/sample/sample_corpus.dart';
 import 'package:test/test.dart';
 
 import 'support/fresh_notes.dart';
@@ -42,21 +41,31 @@ void main() {
     }
 
     test('sample corpus (in-sample: the ontology was tuned on it)', () {
-      final labelled = [for (var i = 0; i < sampleCorpus.length; i++) if (sampleCorpus[i].expectCategory != null) i];
+      final labelled = [
+        for (var i = 0; i < sampleCorpus.length; i++)
+          if (sampleCorpus[i].expectCategory != null) i,
+      ];
       final misses = [
         for (final i in labelled)
-          if (!sampleCorpus[i].accepts(analyses[i].categoryId)) '"${sampleCorpus[i].text}" -> ${analyses[i].categoryId}',
+          if (!sampleCorpus[i].accepts(analyses[i].categoryId))
+            '"${sampleCorpus[i].text}" -> ${analyses[i].categoryId}',
       ];
       expect(misses, isEmpty, reason: misses.join('\n'));
     });
 
     test('held-out v1 (tuned once after first evaluation)', () {
-      final r = [for (final (text, want) in heldOutNotes) (text, want.split('|').contains(brain.analyzeSync(text, now: now).categoryId))];
+      final r = [
+        for (final (text, want) in heldOutNotes)
+          (text, want.split('|').contains(brain.analyzeSync(text, now: now).categoryId)),
+      ];
       expect(accuracy(r), greaterThanOrEqualTo(0.9), reason: r.where((e) => !e.$2).map((e) => e.$1).join('\n'));
     });
 
     test('held-out v2 (first unseen evaluation was 82%; now tuned-on, guards regressions)', () {
-      final r = [for (final (text, want) in freshNotes) (text, want.split('|').contains(brain.analyzeSync(text, now: now).categoryId))];
+      final r = [
+        for (final (text, want) in freshNotes)
+          (text, want.split('|').contains(brain.analyzeSync(text, now: now).categoryId)),
+      ];
       expect(accuracy(r), greaterThanOrEqualTo(0.9), reason: r.where((e) => !e.$2).map((e) => e.$1).join('\n'));
     });
 
@@ -65,7 +74,10 @@ void main() {
     });
 
     test('an explicit form overrides topical evidence', () {
-      expect(brain.analyzeSync('Idea per una app di ricette con gli ingredienti del frigo', now: now).categoryId, 'ideas');
+      expect(
+        brain.analyzeSync('Idea per una app di ricette con gli ingredienti del frigo', now: now).categoryId,
+        'ideas',
+      );
     });
   });
 
@@ -165,7 +177,10 @@ void main() {
     test('every top result for "groceries" is food-related', () async {
       final r = await search('groceries', limit: 4);
       for (final t in r) {
-        expect(t.toLowerCase(), anyOf(contains('milk'), contains('bread'), contains('shopping'), contains('latte'), contains('ricette')));
+        expect(
+          t.toLowerCase(),
+          anyOf(contains('milk'), contains('bread'), contains('shopping'), contains('latte'), contains('ricette')),
+        );
       }
     });
 
@@ -189,7 +204,13 @@ void main() {
 
     test('cross-language: Italian queries find English notes and vice versa', () async {
       expect(await search('spesa', limit: 4), contains('milk and eggs'));
-      expect(await search('viaggio', limit: 5), anyOf(contains('Book flights to Lisbon for October'), contains('Hotel near Alfama in Lisbon, check-in 12 October')));
+      expect(
+        await search('viaggio', limit: 5),
+        anyOf(
+          contains('Book flights to Lisbon for October'),
+          contains('Hotel near Alfama in Lisbon, check-in 12 October'),
+        ),
+      );
       expect(await search('latte', limit: 5), contains('Comprare latte, uova e pane'));
     });
 
@@ -236,13 +257,16 @@ void main() {
       final edges = <GraphEdgeInput>[];
       for (var i = 0; i < sampleCorpus.length; i++) {
         final a = analyses[i];
-        notes.add(GraphNoteInput(id: 'n$i', label: a.title, categoryId: a.categoryId, tags: [for (final t in a.tags) t.name]));
+        notes.add(
+          GraphNoteInput(id: 'n$i', label: a.title, categoryId: a.categoryId, tags: [for (final t in a.tags) t.name]),
+        );
         for (final nb in index.neighbors('n$i', k: 4, minRelatedness: 0.33)) {
           edges.add(GraphEdgeInput('n$i', nb.id, nb.score, reason: nb.reasons.first));
         }
       }
       final g = GraphBuilder.build(notes: notes, edges: edges);
-      int cluster(String prefix) => g.nodes[g.indexOf['n${sampleCorpus.indexWhere((s) => s.text.startsWith(prefix))}']!].cluster;
+      int cluster(String prefix) =>
+          g.nodes[g.indexOf['n${sampleCorpus.indexWhere((s) => s.text.startsWith(prefix))}']!].cluster;
       expect(cluster('Book flights'), greaterThanOrEqualTo(0));
       expect(cluster('Book flights'), cluster('Hotel near Alfama'));
       expect(cluster('Book flights'), cluster('Lisbon itinerary'));
@@ -254,7 +278,8 @@ void main() {
 
   group('performance', () {
     test('analysis of a typical note takes well under a frame', () {
-      const text = 'Remind me to buy milk, eggs and bread tomorrow at 5pm after the dentist appointment, and call mom about Sunday lunch';
+      const text =
+          'Remind me to buy milk, eggs and bread tomorrow at 5pm after the dentist appointment, and call mom about Sunday lunch';
       brain.analyzeSync(text, now: now); // warm-up
       final sw = Stopwatch()..start();
       for (var i = 0; i < 300; i++) {

@@ -88,7 +88,7 @@ void main() {
 
     test('query syntax characters cannot break the FTS query', () async {
       await h.note('plain note about cats');
-      for (final q in ['cats"', 'NEAR(', '*', 'a OR', 'cat*"x', '"'] ) {
+      for (final q in ['cats"', 'NEAR(', '*', 'a OR', 'cat*"x', '"']) {
         await h.repo.lexicalScores(q); // must not throw
       }
     });
@@ -180,7 +180,11 @@ void main() {
       expect(n.categoryId, 'admin', reason: 'locked by the user');
       expect(n.priority, 3, reason: 'locked by the user');
       expect(n.tasks.map((t) => t.title), containsAll(['Call mom', 'Buy flowers']));
-      expect(n.tasks.firstWhere((t) => t.title == 'Call mom').done, isTrue, reason: 'a completed task stays completed when its title is unchanged');
+      expect(
+        n.tasks.firstWhere((t) => t.title == 'Call mom').done,
+        isTrue,
+        reason: 'a completed task stays completed when its title is unchanged',
+      );
       expect(n.tasks.firstWhere((t) => t.title == 'Buy flowers').done, isFalse);
     });
 
@@ -221,13 +225,15 @@ void main() {
     test('link previews are fetched after capture and improve title and search', () async {
       await h.dispose();
       h = await Harness.create(
-        httpClient: MockClient((req) async => http.Response(
-              '<html><head><title>Attention Is All You Need</title>'
-              '<meta property="og:description" content="The Transformer, a model architecture based on attention"/>'
-              '</head></html>',
-              200,
-              headers: {'content-type': 'text/html; charset=utf-8'},
-            )),
+        httpClient: MockClient(
+          (req) async => http.Response(
+            '<html><head><title>Attention Is All You Need</title>'
+            '<meta property="og:description" content="The Transformer, a model architecture based on attention"/>'
+            '</head></html>',
+            200,
+            headers: {'content-type': 'text/html; charset=utf-8'},
+          ),
+        ),
       );
       final id = await h.note('https://arxiv.org/abs/1706.03762');
       final n = (await h.repo.loadNote(id))!;
@@ -271,7 +277,10 @@ void main() {
           ontologyVersion: payload.ontologyVersion,
         ),
       );
-      expect((await h.repo.notesNeedingReindex(h.services.brain.modelId, h.services.brain.ontologyVersion)).map((r) => r.id), [id]);
+      expect(
+        (await h.repo.notesNeedingReindex(h.services.brain.modelId, h.services.brain.ontologyVersion)).map((r) => r.id),
+        [id],
+      );
       await h.enrichment.reindexStale();
       expect(await h.repo.notesNeedingReindex(h.services.brain.modelId, h.services.brain.ontologyVersion), isEmpty);
     });

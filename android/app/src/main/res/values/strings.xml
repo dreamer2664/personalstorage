@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tile_label">Quick note</string>
+    <string name="widget_label">Quick capture</string>
+    <string name="widget_description">One tap to capture a note or start dictation.</string>
+    <string name="widget_new_note">New note</string>
+    <string name="widget_voice">Voice</string>
+    <string name="shortcut_capture_short">New note</string>
+    <string name="shortcut_capture_long">Capture a new note</string>
+    <string name="shortcut_voice_short">Voice note</string>
+    <string name="shortcut_voice_long">Dictate a voice note</string>
+</resources>

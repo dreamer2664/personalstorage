@@ -26,8 +26,8 @@ class NeuralBrain {
     required this.localEncoder,
     TextEncoder? retrievalEncoder,
     this.dates = const DateTimeParser(),
-  })  : ontology = ontology ?? Ontology.standard,
-        _retrieval = retrievalEncoder {
+  }) : ontology = ontology ?? Ontology.standard,
+       _retrieval = retrievalEncoder {
     mapper = ConceptMapper(this.ontology, encoder: localEncoder, leadVerbs: ActionExtractor.allVerbs);
     actionExtractor = ActionExtractor(dates: dates);
     _entities = EntityExtractor(verbs: ActionExtractor.allVerbs);
@@ -80,12 +80,14 @@ class NeuralBrain {
       core = core.replaceRange(u.start, u.end, ' ${u.host.split('.').first} ');
     }
     final itemText = confidentChecklist ? checklist.items.map((i) => i.text).join(', ') : '';
-    final embeddingText = collapseWhitespace([
-      if (confidentChecklist && checklist.title != null) checklist.title!,
-      core,
-      if (confidentChecklist && !core.contains(itemText)) itemText,
-      ?context,
-    ].join('\n'));
+    final embeddingText = collapseWhitespace(
+      [
+        if (confidentChecklist && checklist.title != null) checklist.title!,
+        core,
+        if (confidentChecklist && !core.contains(itemText)) itemText,
+        ?context,
+      ].join('\n'),
+    );
 
     final local = localEncoder.encodeSync(embeddingText);
     final concepts = mapper.activate(embeddingText, language: language, neural: local);
@@ -117,11 +119,14 @@ class NeuralBrain {
       topicText = topicText.replaceRange(e.start, e.end, ' ' * (e.end - e.start));
     }
     final keywords = _keywords.extract(topicText, language: language);
-    final suggestion = !confidentChecklist && kind == NoteKind.text && (concepts['groceries'] >= 0.5 || concepts['household_supplies'] >= 0.5)
+    final suggestion =
+        !confidentChecklist &&
+            kind == NoteKind.text &&
+            (concepts['groceries'] >= 0.5 || concepts['household_supplies'] >= 0.5)
         ? _checklists.suggestInline(trimmed)
         : checklist != null && !confidentChecklist && kind == NoteKind.text
-            ? checklist
-            : null;
+        ? checklist
+        : null;
     final stems = Tokenizer.stems(embeddingText, language: language);
     final words = {for (final t in Tokenizer.content(embeddingText, language: language)) t.norm};
     final tags = _suggestTags(entities, concepts, keywords, language);
@@ -156,7 +161,13 @@ class NeuralBrain {
     String? context,
     bool allowAutoChecklist = true,
   }) async {
-    final a = analyzeSync(text, now: now, imageCount: imageCount, context: context, allowAutoChecklist: allowAutoChecklist);
+    final a = analyzeSync(
+      text,
+      now: now,
+      imageCount: imageCount,
+      context: context,
+      allowAutoChecklist: allowAutoChecklist,
+    );
     final remote = _retrieval;
     if (remote == null) return a;
     final v = await remote.encode(a.embeddingText);

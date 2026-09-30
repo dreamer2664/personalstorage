@@ -64,9 +64,9 @@ class ConceptActivation {
 
   /// Sparse representation used for persistence (`{"groceries": 0.83, ...}`).
   Map<String, double> toSparse() => {
-        for (final c in ontology.concepts)
-          if (values[c.index] >= noise) c.id: double.parse(values[c.index].toStringAsFixed(3)),
-      };
+    for (final c in ontology.concepts)
+      if (values[c.index] >= noise) c.id: double.parse(values[c.index].toStringAsFixed(3)),
+  };
 
   static ConceptActivation fromSparse(Ontology ontology, Map<String, Object?> sparse) {
     final v = Float32List(ontology.size);
@@ -143,10 +143,22 @@ class ConceptMapper {
   static const double secondaryParentDecay = 0.45;
 
   static final List<(RegExp, String, double)> _formCues = [
-    (RegExp(r'^\s*(?:idea|ideas|startup idea|app idea|brainstorm|what if|idea per|idee)\b', caseSensitive: false), 'ideas', 1.6),
-    (RegExp(r'^\s*["“«‘].{4,}["”»’]\s*(?:[-–—~]\s*\p{Lu}[\p{L}. ]{1,40})?\s*$', unicode: true, dotAll: true), 'quotes', 1.8),
+    (
+      RegExp(r'^\s*(?:idea|ideas|startup idea|app idea|brainstorm|what if|idea per|idee)\b', caseSensitive: false),
+      'ideas',
+      1.6,
+    ),
+    (
+      RegExp(r'^\s*["“«‘].{4,}["”»’]\s*(?:[-–—~]\s*\p{Lu}[\p{L}. ]{1,40})?\s*$', unicode: true, dotAll: true),
+      'quotes',
+      1.8,
+    ),
     (RegExp(r'^\s*(?:dear diary|caro diario|today i |oggi ho |oggi mi sono )', caseSensitive: false), 'journal', 1.6),
-    (RegExp(r'^\s*(?:goal|goals|obiettivo|obiettivi|resolution|new year)\b.{0,20}:', caseSensitive: false), 'goals_habits', 1.6),
+    (
+      RegExp(r'^\s*(?:goal|goals|obiettivo|obiettivi|resolution|new year)\b.{0,20}:', caseSensitive: false),
+      'goals_habits',
+      1.6,
+    ),
     (RegExp(r'^\s*(?:meeting notes|minutes|agenda|riunione|verbale)\s*[:\-–]', caseSensitive: false), 'meetings', 1.6),
     (RegExp(r'^\s*(?:watch ?list|to watch|da guardare)\s*[:\-–]', caseSensitive: false), 'movies_tv', 1.6),
     (RegExp(r'^\s*(?:reading list|to read|da leggere)\s*[:\-–]', caseSensitive: false), 'books', 1.6),
@@ -169,12 +181,12 @@ class ConceptMapper {
     // Specificity: a term shared by many concepts is less informative.
     const spec = [1.0, 1.0, 0.8, 0.65, 0.5];
     Map<String, List<_Posting>> finish(Map<String, Map<int, (double, bool)>> raw) => {
-          for (final e in raw.entries)
-            e.key: [
-              for (final p in e.value.entries)
-                _Posting(p.key, p.value.$1 * spec[math.min(e.value.length, 4)], strong: p.value.$2),
-            ],
-        };
+      for (final e in raw.entries)
+        e.key: [
+          for (final p in e.value.entries)
+            _Posting(p.key, p.value.$1 * spec[math.min(e.value.length, 4)], strong: p.value.$2),
+        ],
+    };
     return _Index()
       ..free.addAll(finish(free))
       ..anchored.addAll(finish(anchored));
@@ -307,7 +319,7 @@ class ConceptMapper {
 
   final Map<String, int> _depthCache = {};
   int _depth(Concept c) => _depthCache.putIfAbsent(c.id, () {
-        if (c.parents.isEmpty) return 0;
-        return 1 + c.parents.map((p) => _depth(ontology[p]!)).reduce(math.max);
-      });
+    if (c.parents.isEmpty) return 0;
+    return 1 + c.parents.map((p) => _depth(ontology[p]!)).reduce(math.max);
+  });
 }

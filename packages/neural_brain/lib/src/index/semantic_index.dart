@@ -59,16 +59,16 @@ class IndexedNote {
   final DateTime createdAt;
 
   factory IndexedNote.fromAnalysis(String id, NoteAnalysis a, DateTime createdAt) => IndexedNote(
-        id: id,
-        vector: a.vector,
-        concepts: a.concepts.unit(),
-        stems: a.stems,
-        words: a.words,
-        createdAt: createdAt,
-        keywords: {for (final k in a.keywords) k.phrase},
-        tags: {for (final t in a.tags) t.name},
-        categoryId: a.categoryId,
-      );
+    id: id,
+    vector: a.vector,
+    concepts: a.concepts.unit(),
+    stems: a.stems,
+    words: a.words,
+    createdAt: createdAt,
+    keywords: {for (final k in a.keywords) k.phrase},
+    tags: {for (final t in a.tags) t.name},
+    categoryId: a.categoryId,
+  );
 }
 
 /// A ranked search result with a breakdown for explainability.
@@ -90,7 +90,8 @@ class SearchHit {
   final List<String> reasons;
 
   @override
-  String toString() => 'Hit($id ${score.toStringAsFixed(2)} n=${semantic.toStringAsFixed(2)} '
+  String toString() =>
+      'Hit($id ${score.toStringAsFixed(2)} n=${semantic.toStringAsFixed(2)} '
       'c=${concept.toStringAsFixed(2)} l=${lexical.toStringAsFixed(2)})';
 }
 

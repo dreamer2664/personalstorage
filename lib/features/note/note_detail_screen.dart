@@ -69,7 +69,11 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     if (s == null || !_hydrated) return;
     if (_bodyDirty) {
       _bodyDirty = false;
-      unawaited(s.repo.setBody(widget.noteId, _body.text).then((_) => s.enrichment.reanalyze(widget.noteId, convertToChecklist: false)));
+      unawaited(
+        s.repo
+            .setBody(widget.noteId, _body.text)
+            .then((_) => s.enrichment.reanalyze(widget.noteId, convertToChecklist: false)),
+      );
     }
   }
 
@@ -87,7 +91,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       final s = _services;
       if (s == null || !mounted) return;
       _bodyDirty = false;
-      s.repo.setBody(widget.noteId, _body.text).then((_) => s.enrichment.reanalyze(widget.noteId, convertToChecklist: false));
+      s.repo
+          .setBody(widget.noteId, _body.text)
+          .then((_) => s.enrichment.reanalyze(widget.noteId, convertToChecklist: false));
     });
   }
 
@@ -112,7 +118,11 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                   error: (e, _) => Center(child: Text('$e', style: PsText.body(ps.danger))),
                   data: (d) {
                     if (d == null) {
-                      return const PsEmptyState(icon: CupertinoIcons.trash, title: 'Note deleted', message: 'This note is no longer available.');
+                      return const PsEmptyState(
+                        icon: CupertinoIcons.trash,
+                        title: 'Note deleted',
+                        message: 'This note is no longer available.',
+                      );
                     }
                     _hydrate(d);
                     return _content(d);
@@ -142,7 +152,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           children: [
             PsChip(
               icon: cat.icon,
-              label: categoryLabel(services?.ontology ?? Ontology.standard, d.categoryId) + (d.categoryLocked ? '' : ' · auto'),
+              label:
+                  categoryLabel(services?.ontology ?? Ontology.standard, d.categoryId) +
+                  (d.categoryLocked ? '' : ' · auto'),
               color: cat.color,
               onTap: () => _pickCategory(d),
             ),
@@ -191,7 +203,12 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           PhotoCollage(
             paths: [for (final i in d.images) i.uri],
             height: d.images.length == 1 ? 260 : 300,
-            onTap: (i) => Navigator.of(context).push(CupertinoPageRoute<void>(fullscreenDialog: true, builder: (_) => _PhotoViewer(images: d.images, initial: i))),
+            onTap: (i) => Navigator.of(context).push(
+              CupertinoPageRoute<void>(
+                fullscreenDialog: true,
+                builder: (_) => _PhotoViewer(images: d.images, initial: i),
+              ),
+            ),
           ),
         ],
         for (final l in d.links) ...[
@@ -220,7 +237,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                               note: list[i].note,
                               now: now,
                               reasons: list[i].reasons,
-                              onTap: () => Navigator.of(context).pushReplacement(CupertinoPageRoute<void>(builder: (_) => NoteDetailScreen(noteId: list[i].note.id))),
+                              onTap: () => Navigator.of(context).pushReplacement(
+                                CupertinoPageRoute<void>(builder: (_) => NoteDetailScreen(noteId: list[i].note.id)),
+                              ),
                             ),
                           ),
                         ),
@@ -244,11 +263,22 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
               ),
             ),
             const SizedBox(width: 10),
-            PsButton(label: 'Photo', icon: CupertinoIcons.camera, style: PsButtonStyle.tinted, color: ps.secondaryLabel, onPressed: () => _addPhoto(d)),
+            PsButton(
+              label: 'Photo',
+              icon: CupertinoIcons.camera,
+              style: PsButtonStyle.tinted,
+              color: ps.secondaryLabel,
+              onPressed: () => _addPhoto(d),
+            ),
           ],
         ),
         const SizedBox(height: 14),
-        Center(child: Text('Created ${DateFormat.yMMMd().add_jm().format(d.createdAt)} · ${d.source}', style: PsText.caption(ps.tertiaryLabel))),
+        Center(
+          child: Text(
+            'Created ${DateFormat.yMMMd().add_jm().format(d.createdAt)} · ${d.source}',
+            style: PsText.caption(ps.tertiaryLabel),
+          ),
+        ),
       ],
     );
   }
@@ -271,7 +301,12 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                 Dismissible(
                   key: ValueKey(d.checklist[i].id),
                   direction: DismissDirection.endToStart,
-                  background: Container(alignment: Alignment.centerRight, padding: const EdgeInsets.only(right: 20), color: ps.danger, child: const Icon(CupertinoIcons.trash, color: Color(0xFFFFFFFF))),
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 20),
+                    color: ps.danger,
+                    child: const Icon(CupertinoIcons.trash, color: Color(0xFFFFFFFF)),
+                  ),
                   onDismissed: (_) => repo.removeChecklistItem(d.id, d.checklist[i].id),
                   child: _CheckRow(
                     label: d.checklist[i].label,
@@ -325,12 +360,22 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        PsSectionHeader('Tasks', padding: const EdgeInsets.fromLTRB(4, 24, 4, 8), trailing: GestureDetector(
-          onTap: () => _addTask(d),
-          child: Icon(CupertinoIcons.plus_circle_fill, size: 22, color: ps.accent),
-        )),
+        PsSectionHeader(
+          'Tasks',
+          padding: const EdgeInsets.fromLTRB(4, 24, 4, 8),
+          trailing: GestureDetector(
+            onTap: () => _addTask(d),
+            child: Icon(CupertinoIcons.plus_circle_fill, size: 22, color: ps.accent),
+          ),
+        ),
         if (d.tasks.isEmpty)
-          Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Text('No tasks found in this note. Try "call Anna tomorrow at 5pm".', style: PsText.footnote(ps.tertiaryLabel)))
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              'No tasks found in this note. Try "call Anna tomorrow at 5pm".',
+              style: PsText.footnote(ps.tertiaryLabel),
+            ),
+          )
         else
           GlassPanel(
             blur: false,
@@ -341,17 +386,30 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                   Dismissible(
                     key: ValueKey('task-${t.id}'),
                     direction: DismissDirection.endToStart,
-                    background: Container(alignment: Alignment.centerRight, padding: const EdgeInsets.only(right: 20), color: ps.danger, child: const Icon(CupertinoIcons.trash, color: Color(0xFFFFFFFF))),
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 20),
+                      color: ps.danger,
+                      child: const Icon(CupertinoIcons.trash, color: Color(0xFFFFFFFF)),
+                    ),
                     onDismissed: (_) => actions.deleteTask(t.id),
                     child: _CheckRow(
                       label: t.title,
                       checked: t.done,
                       last: false,
                       trailing: t.dueAt == null
-                          ? PsChip(dense: true, icon: CupertinoIcons.calendar_badge_plus, label: 'Add date', color: ps.secondaryLabel, onTap: () => _pickDue(t))
+                          ? PsChip(
+                              dense: true,
+                              icon: CupertinoIcons.calendar_badge_plus,
+                              label: 'Add date',
+                              color: ps.secondaryLabel,
+                              onTap: () => _pickDue(t),
+                            )
                           : PsChip(
                               dense: true,
-                              icon: t.isOverdue(now) ? CupertinoIcons.exclamationmark_circle_fill : CupertinoIcons.bell_fill,
+                              icon: t.isOverdue(now)
+                                  ? CupertinoIcons.exclamationmark_circle_fill
+                                  : CupertinoIcons.bell_fill,
                               label: TimeFormat.dueLabel(t.dueAt!, now, hasTime: t.hasTime),
                               color: t.isOverdue(now) ? ps.danger : ps.accent,
                               onTap: () => _pickDue(t),
@@ -375,10 +433,17 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
         title: const Text('New task'),
-        content: Padding(padding: const EdgeInsets.only(top: 10), child: CupertinoTextField(controller: c, autofocus: true, placeholder: 'e.g. Send the invoice')),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: CupertinoTextField(controller: c, autofocus: true, placeholder: 'e.g. Send the invoice'),
+        ),
         actions: [
           CupertinoDialogAction(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          CupertinoDialogAction(isDefaultAction: true, onPressed: () => Navigator.pop(ctx, c.text.trim()), child: const Text('Add')),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.pop(ctx, c.text.trim()),
+            child: const Text('Add'),
+          ),
         ],
       ),
     );
@@ -392,7 +457,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       builder: (ctx) => Container(
         height: 330,
         padding: const EdgeInsets.only(top: 8),
-        color: CupertinoTheme.of(ctx).scaffoldBackgroundColor == const Color(0x00000000) ? context.ps.backgroundTint : CupertinoTheme.of(ctx).scaffoldBackgroundColor,
+        color: CupertinoTheme.of(ctx).scaffoldBackgroundColor == const Color(0x00000000)
+            ? context.ps.backgroundTint
+            : CupertinoTheme.of(ctx).scaffoldBackgroundColor,
         child: SafeArea(
           top: false,
           child: Column(
@@ -404,7 +471,9 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                   CupertinoButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Done')),
                 ],
               ),
-              Expanded(child: CupertinoDatePicker(initialDateTime: picked, onDateTimeChanged: (v) => picked = v)),
+              Expanded(
+                child: CupertinoDatePicker(initialDateTime: picked, onDateTimeChanged: (v) => picked = v),
+              ),
             ],
           ),
         ),
@@ -437,11 +506,13 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         if (d.tags.any((t) => !t.isUser))
           Padding(
             padding: const EdgeInsets.only(top: 8, left: 2),
-            child: Row(children: [
-              Icon(CupertinoIcons.sparkles, size: 12, color: ps.tertiaryLabel),
-              const SizedBox(width: 5),
-              Text('Grey tags were added by the on-device brain', style: PsText.caption(ps.tertiaryLabel)),
-            ]),
+            child: Row(
+              children: [
+                Icon(CupertinoIcons.sparkles, size: 12, color: ps.tertiaryLabel),
+                const SizedBox(width: 5),
+                Text('Grey tags were added by the on-device brain', style: PsText.caption(ps.tertiaryLabel)),
+              ],
+            ),
           ),
       ],
     );
@@ -453,10 +524,22 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       context: context,
       builder: (ctx) => CupertinoAlertDialog(
         title: const Text('Add tag'),
-        content: Padding(padding: const EdgeInsets.only(top: 10), child: CupertinoTextField(controller: c, autofocus: true, placeholder: 'e.g. lisbon', prefix: const Padding(padding: EdgeInsets.only(left: 8), child: Text('#')))),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: CupertinoTextField(
+            controller: c,
+            autofocus: true,
+            placeholder: 'e.g. lisbon',
+            prefix: const Padding(padding: EdgeInsets.only(left: 8), child: Text('#')),
+          ),
+        ),
         actions: [
           CupertinoDialogAction(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-          CupertinoDialogAction(isDefaultAction: true, onPressed: () => Navigator.pop(ctx, c.text), child: const Text('Add')),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.pop(ctx, c.text),
+            child: const Text('Add'),
+          ),
         ],
       ),
     );
@@ -472,8 +555,15 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       builder: (ctx) => CupertinoActionSheet(
         title: Text('#${t.name}'),
         actions: [
-          CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx, 'show'), child: const Text('Show notes with this tag')),
-          CupertinoActionSheetAction(isDestructiveAction: true, onPressed: () => Navigator.pop(ctx, 'remove'), child: const Text('Remove from this note')),
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.pop(ctx, 'show'),
+            child: const Text('Show notes with this tag'),
+          ),
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.pop(ctx, 'remove'),
+            child: const Text('Remove from this note'),
+          ),
         ],
         cancelButton: CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
       ),
@@ -518,7 +608,10 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         actions: [
           CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx, -1), child: const Text('Automatic')),
           for (var i = 0; i < 4; i++)
-            CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx, i), child: Text(const ['None', 'Low', 'Medium', 'High'][i])),
+            CupertinoActionSheetAction(
+              onPressed: () => Navigator.pop(ctx, i),
+              child: Text(const ['None', 'Low', 'Medium', 'High'][i]),
+            ),
         ],
         cancelButton: CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
       ),
@@ -540,7 +633,16 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       final saved = [for (final f in files) await s.media.persistImage(f.path)];
       await s.repo.addImages(d.id, saved);
     } on Object catch (e) {
-      if (mounted) await showCupertinoDialog<void>(context: context, builder: (ctx) => CupertinoAlertDialog(title: const Text('Couldn\'t add photo'), content: Text('$e'), actions: [CupertinoDialogAction(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))]));
+      if (mounted) {
+        await showCupertinoDialog<void>(
+          context: context,
+          builder: (ctx) => CupertinoAlertDialog(
+            title: const Text('Couldn\'t add photo'),
+            content: Text('$e'),
+            actions: [CupertinoDialogAction(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
+          ),
+        );
+      }
     }
   }
 }
@@ -558,7 +660,11 @@ class _TopBar extends ConsumerWidget {
       padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
       child: Row(
         children: [
-          GlassIconButton(icon: CupertinoIcons.chevron_left, semanticLabel: 'Back', onPressed: () => Navigator.of(context).maybePop()),
+          GlassIconButton(
+            icon: CupertinoIcons.chevron_left,
+            semanticLabel: 'Back',
+            onPressed: () => Navigator.of(context).maybePop(),
+          ),
           const Spacer(),
           if (detail != null) ...[
             GlassIconButton(
@@ -576,15 +682,29 @@ class _TopBar extends ConsumerWidget {
                   context: context,
                   builder: (ctx) => CupertinoActionSheet(
                     actions: [
-                      CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx, 'copy'), child: const Text('Copy text')),
-                      CupertinoActionSheetAction(isDestructiveAction: true, onPressed: () => Navigator.pop(ctx, 'delete'), child: const Text('Delete note')),
+                      CupertinoActionSheetAction(
+                        onPressed: () => Navigator.pop(ctx, 'copy'),
+                        child: const Text('Copy text'),
+                      ),
+                      CupertinoActionSheetAction(
+                        isDestructiveAction: true,
+                        onPressed: () => Navigator.pop(ctx, 'delete'),
+                        child: const Text('Delete note'),
+                      ),
                     ],
-                    cancelButton: CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+                    cancelButton: CupertinoActionSheetAction(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('Cancel'),
+                    ),
                   ),
                 );
                 if (choice == 'copy') {
                   final d = detail!;
-                  final text = [d.title, d.body, for (final c in d.checklist) '- [${c.checked ? 'x' : ' '}] ${c.label}'].where((s) => s.isNotEmpty).join('\n');
+                  final text = [
+                    d.title,
+                    d.body,
+                    for (final c in d.checklist) '- [${c.checked ? 'x' : ' '}] ${c.label}',
+                  ].where((s) => s.isNotEmpty).join('\n');
                   await Clipboard.setData(ClipboardData(text: text));
                 }
                 if (choice == 'delete' && services != null) {
@@ -601,7 +721,13 @@ class _TopBar extends ConsumerWidget {
 }
 
 class _CheckRow extends StatelessWidget {
-  const _CheckRow({required this.label, required this.checked, required this.onToggle, required this.last, this.trailing});
+  const _CheckRow({
+    required this.label,
+    required this.checked,
+    required this.onToggle,
+    required this.last,
+    this.trailing,
+  });
 
   final String label;
   final bool checked;
@@ -639,7 +765,8 @@ class _CheckRow extends StatelessWidget {
             Expanded(
               child: AnimatedDefaultTextStyle(
                 duration: PsMotion.base,
-                style: PsText.body(checked ? ps.tertiaryLabel : ps.label).copyWith(decoration: checked ? TextDecoration.lineThrough : TextDecoration.none),
+                style: PsText.body(checked ? ps.tertiaryLabel : ps.label)
+                    .copyWith(decoration: checked ? TextDecoration.lineThrough : TextDecoration.none),
                 child: Text(label),
               ),
             ),
@@ -679,8 +806,19 @@ class _LinkCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(link.title ?? link.host ?? link.uri, maxLines: 2, overflow: TextOverflow.ellipsis, style: PsText.headline(ps.label)),
-                if (link.description != null) Text(link.description!, maxLines: 2, overflow: TextOverflow.ellipsis, style: PsText.footnote(ps.secondaryLabel)),
+                Text(
+                  link.title ?? link.host ?? link.uri,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: PsText.headline(ps.label),
+                ),
+                if (link.description != null)
+                  Text(
+                    link.description!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: PsText.footnote(ps.secondaryLabel),
+                  ),
                 Text(link.host ?? '', style: PsText.caption(ps.accent)),
               ],
             ),
@@ -722,14 +860,21 @@ class _PhotoViewerState extends State<_PhotoViewer> {
             controller: _pc,
             itemCount: widget.images.length,
             onPageChanged: (i) => setState(() => _page = i),
-            itemBuilder: (_, i) => InteractiveViewer(maxScale: 5, child: Center(child: PsImage(widget.images[i].uri, fit: BoxFit.contain))),
+            itemBuilder: (_, i) => InteractiveViewer(
+              maxScale: 5,
+              child: Center(child: PsImage(widget.images[i].uri, fit: BoxFit.contain)),
+            ),
           ),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  GlassIconButton(icon: CupertinoIcons.xmark, semanticLabel: 'Close', onPressed: () => Navigator.of(context).pop()),
+                  GlassIconButton(
+                    icon: CupertinoIcons.xmark,
+                    semanticLabel: 'Close',
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
                   const Spacer(),
                   Text('${_page + 1} / ${widget.images.length}', style: PsText.subhead(const Color(0xFFFFFFFF))),
                   const Spacer(),

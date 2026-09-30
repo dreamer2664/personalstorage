@@ -74,19 +74,52 @@ class Stemmer {
   }
 
   static String _undouble(String s) {
-    if (s.length > 2 &&
-        s[s.length - 1] == s[s.length - 2] &&
-        !'aeioulsz'.contains(s[s.length - 1])) {
+    if (s.length > 2 && s[s.length - 1] == s[s.length - 2] && !'aeioulsz'.contains(s[s.length - 1])) {
       return s.substring(0, s.length - 1);
     }
     return s;
   }
 
   static const List<String> _itSuffixes = [
-    'azioni', 'azione', 'zioni', 'zione', 'amenti', 'amento', 'imenti', 'imento', 'issimo',
-    'issima', 'issimi', 'issime', 'atrice', 'atori', 'atore', 'mente', 'abile', 'ibile', 'iamo',
-    'ando', 'endo', 'ano', 'ono', 'are', 'ere', 'ire', 'ato', 'ata', 'ati', 'ate', 'uto', 'uta',
-    'uti', 'ute', 'ito', 'ita', 'iti', 'ite', 'ete',
+    'azioni',
+    'azione',
+    'zioni',
+    'zione',
+    'amenti',
+    'amento',
+    'imenti',
+    'imento',
+    'issimo',
+    'issima',
+    'issimi',
+    'issime',
+    'atrice',
+    'atori',
+    'atore',
+    'mente',
+    'abile',
+    'ibile',
+    'iamo',
+    'ando',
+    'endo',
+    'ano',
+    'ono',
+    'are',
+    'ere',
+    'ire',
+    'ato',
+    'ata',
+    'ati',
+    'ate',
+    'uto',
+    'uta',
+    'uti',
+    'ute',
+    'ito',
+    'ita',
+    'iti',
+    'ite',
+    'ete',
   ];
 
   static String _italian(String w) {

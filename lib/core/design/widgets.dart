@@ -64,7 +64,9 @@ class PsChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[Icon(icon, size: dense ? 11 : 13, color: fg), SizedBox(width: dense ? 3 : 5)],
-          Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: PsText.chip(fg))),
+          Flexible(
+            child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: PsText.chip(fg)),
+          ),
           if (onRemove != null) ...[
             const SizedBox(width: 4),
             GestureDetector(
@@ -119,14 +121,27 @@ class PsButton extends StatelessWidget {
         children: [
           if (icon != null) ...[Icon(icon, size: 18, color: fg), const SizedBox(width: 8)],
           // Flexible: long labels / large accessibility text wrap instead of overflowing.
-          Flexible(child: Text(label, maxLines: 2, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis, style: PsText.headline(fg))),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: PsText.headline(fg),
+            ),
+          ),
         ],
       ),
     );
-    return PressableScale(onTap: onPressed == null ? null : () {
-      Haptics.light();
-      onPressed!();
-    }, child: child);
+    return PressableScale(
+      onTap: onPressed == null
+          ? null
+          : () {
+              Haptics.light();
+              onPressed!();
+            },
+      child: child,
+    );
   }
 }
 
@@ -155,7 +170,12 @@ class FadeSlideIn extends StatelessWidget {
 }
 
 class PsSectionHeader extends StatelessWidget {
-  const PsSectionHeader(this.title, {this.trailing, this.padding = const EdgeInsets.fromLTRB(20, 18, 20, 8), super.key});
+  const PsSectionHeader(
+    this.title, {
+    this.trailing,
+    this.padding = const EdgeInsets.fromLTRB(20, 18, 20, 8),
+    super.key,
+  });
 
   final String title;
   final Widget? trailing;
@@ -168,7 +188,9 @@ class PsSectionHeader extends StatelessWidget {
       padding: padding,
       child: Row(
         children: [
-          Expanded(child: Text(title.toUpperCase(), style: PsText.caption(ps.secondaryLabel).copyWith(letterSpacing: 0.8))),
+          Expanded(
+            child: Text(title.toUpperCase(), style: PsText.caption(ps.secondaryLabel).copyWith(letterSpacing: 0.8)),
+          ),
           ?trailing,
         ],
       ),
@@ -196,7 +218,8 @@ class PsHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (subtitle != null) Text(subtitle!, style: PsText.footnote(ps.secondaryLabel).copyWith(fontWeight: FontWeight.w500)),
+                if (subtitle != null)
+                  Text(subtitle!, style: PsText.footnote(ps.secondaryLabel).copyWith(fontWeight: FontWeight.w500)),
                 Text(title, style: PsText.largeTitle(ps.label)),
               ],
             ),
@@ -210,7 +233,14 @@ class PsHeader extends StatelessWidget {
 
 /// Round glass icon button (navigation bars, overlays).
 class GlassIconButton extends StatelessWidget {
-  const GlassIconButton({required this.icon, required this.onPressed, this.size = 40, this.color, this.semanticLabel, super.key});
+  const GlassIconButton({
+    required this.icon,
+    required this.onPressed,
+    this.size = 40,
+    this.color,
+    this.semanticLabel,
+    super.key,
+  });
 
   final IconData icon;
   final VoidCallback? onPressed;
@@ -234,7 +264,11 @@ class GlassIconButton extends StatelessWidget {
                 Haptics.select();
                 onPressed!();
               },
-        child: SizedBox(width: size, height: size, child: Icon(icon, size: size * 0.48, color: color ?? ps.label)),
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Icon(icon, size: size * 0.48, color: color ?? ps.label),
+        ),
       ),
     );
   }

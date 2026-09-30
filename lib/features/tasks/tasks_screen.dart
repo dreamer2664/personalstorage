@@ -34,7 +34,9 @@ class TasksScreen extends ConsumerWidget {
             final open = all.where((t) => !t.done).length;
             return CustomScrollView(
               slivers: [
-                SliverToBoxAdapter(child: PsHeader(title: 'Tasks', subtitle: open == 0 ? 'All clear' : '$open open')),
+                SliverToBoxAdapter(
+                  child: PsHeader(title: 'Tasks', subtitle: open == 0 ? 'All clear' : '$open open'),
+                ),
                 if (all.isEmpty)
                   const SliverFillRemaining(
                     hasScrollBody: false,
@@ -45,21 +47,27 @@ class TasksScreen extends ConsumerWidget {
                     ),
                   ),
                 for (final g in groups)
-                  SliverList.list(children: [
-                    PsSectionHeader(g.title, trailing: Text('${g.items.length}', style: PsText.caption(g.color ?? ps.secondaryLabel))),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: GlassPanel(
-                        blur: false,
-                        radius: 20,
-                        child: Column(
-                          children: [
-                            for (var i = 0; i < g.items.length; i++) _TaskRow(task: g.items[i], now: now, showDivider: i < g.items.length - 1),
-                          ],
+                  SliverList.list(
+                    children: [
+                      PsSectionHeader(
+                        g.title,
+                        trailing: Text('${g.items.length}', style: PsText.caption(g.color ?? ps.secondaryLabel)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: GlassPanel(
+                          blur: false,
+                          radius: 20,
+                          child: Column(
+                            children: [
+                              for (var i = 0; i < g.items.length; i++)
+                                _TaskRow(task: g.items[i], now: now, showDivider: i < g.items.length - 1),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ]),
+                    ],
+                  ),
                 SliverToBoxAdapter(child: SizedBox(height: bottomInset + 24)),
               ],
             );
@@ -70,7 +78,13 @@ class TasksScreen extends ConsumerWidget {
   }
 
   List<_Group> _group(List<TaskInfo> all, DateTime now) {
-    final overdue = <TaskInfo>[], today = <TaskInfo>[], tomorrow = <TaskInfo>[], week = <TaskInfo>[], later = <TaskInfo>[], none = <TaskInfo>[], done = <TaskInfo>[];
+    final overdue = <TaskInfo>[],
+        today = <TaskInfo>[],
+        tomorrow = <TaskInfo>[],
+        week = <TaskInfo>[],
+        later = <TaskInfo>[],
+        none = <TaskInfo>[],
+        done = <TaskInfo>[];
     for (final t in all) {
       if (t.done) {
         done.add(t);
@@ -80,7 +94,14 @@ class TasksScreen extends ConsumerWidget {
         overdue.add(t);
       } else {
         final d = TimeFormat.daysBetween(now, t.dueAt!);
-        (d <= 0 ? today : d == 1 ? tomorrow : d < 7 ? week : later).add(t);
+        (d <= 0
+                ? today
+                : d == 1
+                ? tomorrow
+                : d < 7
+                ? week
+                : later)
+            .add(t);
       }
     }
     return [
@@ -119,7 +140,9 @@ class _TaskRow extends ConsumerWidget {
       children: [
         PressableScale(
           scale: 0.99,
-          onTap: () => Navigator.of(context).push(CupertinoPageRoute<void>(builder: (_) => NoteDetailScreen(noteId: task.noteId))),
+          onTap: () =>
+              Navigator.of(context)
+                  .push(CupertinoPageRoute<void>(builder: (_) => NoteDetailScreen(noteId: task.noteId))),
           child: Padding(
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
             child: Row(
@@ -142,9 +165,16 @@ class _TaskRow extends ConsumerWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: task.done ? ps.success : const Color(0x00000000),
-                        border: Border.all(color: task.done ? ps.success : (overdue ? ps.danger : ps.tertiaryLabel), width: 1.8),
+                        border: Border.all(
+                          color: task.done ? ps.success : (overdue ? ps.danger : ps.tertiaryLabel),
+                          width: 1.8,
+                        ),
                       ),
-                      child: AnimatedOpacity(duration: PsMotion.fast, opacity: task.done ? 1 : 0, child: const Icon(CupertinoIcons.checkmark_alt, size: 16, color: Color(0xFFFFFFFF))),
+                      child: AnimatedOpacity(
+                        duration: PsMotion.fast,
+                        opacity: task.done ? 1 : 0,
+                        child: const Icon(CupertinoIcons.checkmark_alt, size: 16, color: Color(0xFFFFFFFF)),
+                      ),
                     ),
                   ),
                 ),
@@ -155,7 +185,8 @@ class _TaskRow extends ConsumerWidget {
                     children: [
                       AnimatedDefaultTextStyle(
                         duration: PsMotion.base,
-                        style: PsText.body(task.done ? ps.tertiaryLabel : ps.label).copyWith(decoration: task.done ? TextDecoration.lineThrough : TextDecoration.none),
+                        style: PsText.body(task.done ? ps.tertiaryLabel : ps.label)
+                            .copyWith(decoration: task.done ? TextDecoration.lineThrough : TextDecoration.none),
                         child: Text(task.title, maxLines: 2, overflow: TextOverflow.ellipsis),
                       ),
                       const SizedBox(height: 3),
@@ -163,12 +194,20 @@ class _TaskRow extends ConsumerWidget {
                         children: [
                           Icon(cat.icon, size: 12, color: cat.color),
                           const SizedBox(width: 5),
-                          Flexible(child: Text(task.noteTitle ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: PsText.caption(ps.secondaryLabel))),
+                          Flexible(
+                            child: Text(
+                              task.noteTitle ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: PsText.caption(ps.secondaryLabel),
+                            ),
+                          ),
                           if (task.dueAt != null) ...[
                             Text('  ·  ', style: PsText.caption(ps.tertiaryLabel)),
                             Text(
                               TimeFormat.dueLabel(task.dueAt!, now, hasTime: task.hasTime),
-                              style: PsText.caption(overdue ? ps.danger : ps.accent).copyWith(fontWeight: FontWeight.w600),
+                              style: PsText.caption(overdue ? ps.danger : ps.accent)
+                                  .copyWith(fontWeight: FontWeight.w600),
                             ),
                             if (task.isDeadline) Text(' · deadline', style: PsText.caption(ps.tertiaryLabel)),
                           ],

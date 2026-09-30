@@ -88,7 +88,11 @@ class CaptureService {
     final now = draft.createdAt ?? DateTime.now();
     final text = draft.text.trim();
 
-    final analysis = await brain.brain.analyze(text, now: draft.referenceTime ?? now, imageCount: draft.imagePaths.length);
+    final analysis = await brain.brain.analyze(
+      text,
+      now: draft.referenceTime ?? now,
+      imageCount: draft.imagePaths.length,
+    );
     final suggestion = analysis.checklistSuggestion;
     final makeChecklist = analysis.checklist == null && draft.acceptChecklistSuggestion && suggestion != null;
     final checklist = analysis.checklist ?? (makeChecklist ? suggestion : null);
@@ -106,23 +110,25 @@ class CaptureService {
       _ => analysis.title,
     };
 
-    await repo.insert(NewNote(
-      id: id,
-      body: text,
-      title: title,
-      kind: kind,
-      categoryId: analysis.categoryId,
-      priority: analysis.priority.level.value,
-      language: analysis.language.code,
-      source: draft.source,
-      createdAt: now,
-      tags: analysis.tags,
-      checklist: checklist?.items ?? const [],
-      imagePaths: images,
-      links: analysis.entities.urls,
-      tasks: analysis.actions,
-      embedding: brain.payload(analysis),
-    ));
+    await repo.insert(
+      NewNote(
+        id: id,
+        body: text,
+        title: title,
+        kind: kind,
+        categoryId: analysis.categoryId,
+        priority: analysis.priority.level.value,
+        language: analysis.language.code,
+        source: draft.source,
+        createdAt: now,
+        tags: analysis.tags,
+        checklist: checklist?.items ?? const [],
+        imagePaths: images,
+        links: analysis.entities.urls,
+        tasks: analysis.actions,
+        embedding: brain.payload(analysis),
+      ),
+    );
     brain.index.upsert(IndexedNote.fromAnalysis(id, analysis, now));
 
     // Everything below happens after the note is already visible.

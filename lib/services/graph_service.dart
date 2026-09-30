@@ -9,7 +9,11 @@ class GraphService {
   final NoteRepository repo;
 
   /// [minWeight] is the "connection strength" slider; [tagHubs] adds tag nodes.
-  Future<KnowledgeGraph> load({double minWeight = 0.33, bool tagHubs = false, String Function(String)? categoryLabel}) async {
+  Future<KnowledgeGraph> load({
+    double minWeight = 0.33,
+    bool tagHubs = false,
+    String Function(String)? categoryLabel,
+  }) async {
     final notes = await repo.graphNotes();
     final edges = await repo.db.select(repo.db.edges).get();
     return GraphBuilder.build(

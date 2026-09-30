@@ -126,14 +126,14 @@ abstract final class PsText {
   static const String family = 'Inter';
 
   static TextStyle _s(double size, FontWeight w, Color c, {double? height, double? spacing}) => TextStyle(
-        fontFamily: family,
-        fontSize: size,
-        fontWeight: w,
-        color: c,
-        height: height,
-        letterSpacing: spacing,
-        decoration: TextDecoration.none,
-      );
+    fontFamily: family,
+    fontSize: size,
+    fontWeight: w,
+    color: c,
+    height: height,
+    letterSpacing: spacing,
+    decoration: TextDecoration.none,
+  );
 
   static TextStyle largeTitle(Color c) => _s(34, FontWeight.w700, c, height: 1.12, spacing: -0.9);
   static TextStyle title(Color c) => _s(22, FontWeight.w600, c, height: 1.2, spacing: -0.4);

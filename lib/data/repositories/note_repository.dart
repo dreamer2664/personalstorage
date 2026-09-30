@@ -21,68 +21,87 @@ class NoteRepository {
   /// Inserts a note with all its children atomically. The note is visible to every `watch`
   /// stream as soon as the transaction commits - capture never waits for enrichment.
   Future<void> insert(NewNote n) => db.transaction(() async {
-        await db.into(db.notes).insert(NotesCompanion.insert(
-              id: n.id,
-              title: Value(n.title),
-              body: Value(n.body),
-              kind: Value(n.kind.name),
-              categoryId: Value(n.categoryId),
-              priority: Value(n.priority),
-              language: Value(n.language),
-              source: Value(n.source),
-              createdAt: n.createdAt,
-              updatedAt: n.createdAt,
-            ));
-        for (var i = 0; i < n.checklist.length; i++) {
-          await db.into(db.checklistItems).insert(ChecklistItemsCompanion.insert(
-                id: Ulid.next(),
-                noteId: n.id,
-                label: n.checklist[i].text,
-                checked: Value(n.checklist[i].checked),
-                position: i,
-              ));
-        }
-        for (var i = 0; i < n.imagePaths.length; i++) {
-          await db.into(db.attachments).insert(AttachmentsCompanion.insert(
-                id: Ulid.next(),
-                noteId: n.id,
-                kind: 'image',
-                uri: n.imagePaths[i],
-                position: Value(i),
-              ));
-        }
-        for (var i = 0; i < n.links.length; i++) {
-          await db.into(db.attachments).insert(AttachmentsCompanion.insert(
-                id: Ulid.next(),
-                noteId: n.id,
-                kind: 'link',
-                uri: n.links[i].url,
-                host: Value(n.links[i].host),
-                position: Value(i),
-              ));
-        }
-        for (final t in n.tags) {
-          await _attachTag(n.id, t.name, t.source == TagSource.user ? 'user' : 'ai', t.confidence);
-        }
-        for (final a in n.tasks) {
-          await _insertTask(n.id, a, n.createdAt);
-        }
-        if (n.embedding != null) await _upsertEmbedding(n.id, n.embedding!);
-        await _refreshFts(n.id);
-      });
+    await db
+        .into(db.notes)
+        .insert(
+          NotesCompanion.insert(
+            id: n.id,
+            title: Value(n.title),
+            body: Value(n.body),
+            kind: Value(n.kind.name),
+            categoryId: Value(n.categoryId),
+            priority: Value(n.priority),
+            language: Value(n.language),
+            source: Value(n.source),
+            createdAt: n.createdAt,
+            updatedAt: n.createdAt,
+          ),
+        );
+    for (var i = 0; i < n.checklist.length; i++) {
+      await db
+          .into(db.checklistItems)
+          .insert(
+            ChecklistItemsCompanion.insert(
+              id: Ulid.next(),
+              noteId: n.id,
+              label: n.checklist[i].text,
+              checked: Value(n.checklist[i].checked),
+              position: i,
+            ),
+          );
+    }
+    for (var i = 0; i < n.imagePaths.length; i++) {
+      await db
+          .into(db.attachments)
+          .insert(
+            AttachmentsCompanion.insert(
+              id: Ulid.next(),
+              noteId: n.id,
+              kind: 'image',
+              uri: n.imagePaths[i],
+              position: Value(i),
+            ),
+          );
+    }
+    for (var i = 0; i < n.links.length; i++) {
+      await db
+          .into(db.attachments)
+          .insert(
+            AttachmentsCompanion.insert(
+              id: Ulid.next(),
+              noteId: n.id,
+              kind: 'link',
+              uri: n.links[i].url,
+              host: Value(n.links[i].host),
+              position: Value(i),
+            ),
+          );
+    }
+    for (final t in n.tags) {
+      await _attachTag(n.id, t.name, t.source == TagSource.user ? 'user' : 'ai', t.confidence);
+    }
+    for (final a in n.tasks) {
+      await _insertTask(n.id, a, n.createdAt);
+    }
+    if (n.embedding != null) await _upsertEmbedding(n.id, n.embedding!);
+    await _refreshFts(n.id);
+  });
 
-  Future<void> _insertTask(String noteId, ExtractedAction a, DateTime createdAt, {bool done = false}) =>
-      db.into(db.tasks).insert(TasksCompanion.insert(
-            id: Ulid.next(),
-            noteId: noteId,
-            title: a.title,
-            dueAt: Value(a.due),
-            hasTime: Value(a.hasDueTime),
-            isDeadline: Value(a.isDeadline),
-            priority: Value(a.urgent ? 3 : 0),
-            done: Value(done),
-            createdAt: createdAt,
-          ));
+  Future<void> _insertTask(String noteId, ExtractedAction a, DateTime createdAt, {bool done = false}) => db
+      .into(db.tasks)
+      .insert(
+        TasksCompanion.insert(
+          id: Ulid.next(),
+          noteId: noteId,
+          title: a.title,
+          dueAt: Value(a.due),
+          hasTime: Value(a.hasDueTime),
+          isDeadline: Value(a.isDeadline),
+          priority: Value(a.urgent ? 3 : 0),
+          done: Value(done),
+          createdAt: createdAt,
+        ),
+      );
 
   Future<int> _tagId(String name) async {
     await db.into(db.tags).insert(TagsCompanion.insert(name: name), mode: InsertMode.insertOrIgnore);
@@ -91,7 +110,9 @@ class NoteRepository {
 
   Future<void> _attachTag(String noteId, String name, String source, double confidence) async {
     final id = await _tagId(name);
-    await db.into(db.noteTags).insert(
+    await db
+        .into(db.noteTags)
+        .insert(
           NoteTagsCompanion.insert(noteId: noteId, tagId: id, source: Value(source), confidence: Value(confidence)),
           mode: InsertMode.insertOrReplace,
         );
@@ -107,79 +128,88 @@ class NoteRepository {
     required NoteAnalysis analysis,
     required EmbeddingPayload embedding,
     DateTime? now,
-  }) =>
-      db.transaction(() async {
-        final row = await (db.select(db.notes)..where((n) => n.id.equals(id))).getSingleOrNull();
-        if (row == null) return;
-        final at = now ?? DateTime.now();
-        // Structure the user already has wins over what the text alone suggests.
-        final checklistCount = (await (db.select(db.checklistItems)..where((c) => c.noteId.equals(id))).get()).length;
-        final imageCount = (await (db.select(db.attachments)..where((a) => a.noteId.equals(id) & a.kind.equals('image'))).get()).length;
-        final kind = checklistCount > 0
-            ? NoteKind.checklist
-            : imageCount > 0
-                ? NoteKind.image
-                : analysis.kind;
-        final keepTitle = body.trim().isEmpty && imageCount > 0;
-        await (db.update(db.notes)..where((n) => n.id.equals(id))).write(NotesCompanion(
-          body: Value(body),
-          title: keepTitle || row.titleLocked ? const Value.absent() : Value(analysis.title),
-          kind: Value(kind.name),
-          language: Value(analysis.language.code),
-          categoryId: row.categoryLocked ? const Value.absent() : Value(analysis.categoryId),
-          priority: row.priorityLocked ? const Value.absent() : Value(analysis.priority.level.value),
-          updatedAt: Value(at),
-        ));
-        // AI tags are replaced; user tags are kept.
-        await (db.delete(db.noteTags)..where((t) => t.noteId.equals(id) & t.source.equals('ai'))).go();
-        for (final t in analysis.tags) {
-          final exists = await (db.select(db.noteTags).join([innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId))])
-                ..where(db.noteTags.noteId.equals(id) & db.tags.name.equals(t.name)))
-              .get();
-          if (exists.isEmpty) await _attachTag(id, t.name, t.source == TagSource.user ? 'user' : 'ai', t.confidence);
-        }
-        // AI tasks are re-derived; completed ones stay completed when their title is unchanged.
-        final old = await (db.select(db.tasks)..where((t) => t.noteId.equals(id) & t.origin.equals('ai'))).get();
-        final doneTitles = {for (final t in old.where((t) => t.done)) t.title.toLowerCase()};
-        await (db.delete(db.tasks)..where((t) => t.noteId.equals(id) & t.origin.equals('ai'))).go();
-        for (final a in analysis.actions) {
-          await _insertTask(id, a, at, done: doneTitles.contains(a.title.toLowerCase()));
-        }
-        await _upsertEmbedding(id, embedding);
-        await _refreshFts(id);
-      });
+  }) => db.transaction(() async {
+    final row = await (db.select(db.notes)..where((n) => n.id.equals(id))).getSingleOrNull();
+    if (row == null) return;
+    final at = now ?? DateTime.now();
+    // Structure the user already has wins over what the text alone suggests.
+    final checklistCount = (await (db.select(db.checklistItems)..where((c) => c.noteId.equals(id))).get()).length;
+    final imageCount = (await (db.select(
+      db.attachments,
+    )..where((a) => a.noteId.equals(id) & a.kind.equals('image'))).get()).length;
+    final kind = checklistCount > 0
+        ? NoteKind.checklist
+        : imageCount > 0
+        ? NoteKind.image
+        : analysis.kind;
+    final keepTitle = body.trim().isEmpty && imageCount > 0;
+    await (db.update(db.notes)..where((n) => n.id.equals(id))).write(
+      NotesCompanion(
+        body: Value(body),
+        title: keepTitle || row.titleLocked ? const Value.absent() : Value(analysis.title),
+        kind: Value(kind.name),
+        language: Value(analysis.language.code),
+        categoryId: row.categoryLocked ? const Value.absent() : Value(analysis.categoryId),
+        priority: row.priorityLocked ? const Value.absent() : Value(analysis.priority.level.value),
+        updatedAt: Value(at),
+      ),
+    );
+    // AI tags are replaced; user tags are kept.
+    await (db.delete(db.noteTags)..where((t) => t.noteId.equals(id) & t.source.equals('ai'))).go();
+    for (final t in analysis.tags) {
+      final exists = await (db.select(db.noteTags).join([
+        innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId)),
+      ])..where(db.noteTags.noteId.equals(id) & db.tags.name.equals(t.name))).get();
+      if (exists.isEmpty) await _attachTag(id, t.name, t.source == TagSource.user ? 'user' : 'ai', t.confidence);
+    }
+    // AI tasks are re-derived; completed ones stay completed when their title is unchanged.
+    final old = await (db.select(db.tasks)..where((t) => t.noteId.equals(id) & t.origin.equals('ai'))).get();
+    final doneTitles = {for (final t in old.where((t) => t.done)) t.title.toLowerCase()};
+    await (db.delete(db.tasks)..where((t) => t.noteId.equals(id) & t.origin.equals('ai'))).go();
+    for (final a in analysis.actions) {
+      await _insertTask(id, a, at, done: doneTitles.contains(a.title.toLowerCase()));
+    }
+    await _upsertEmbedding(id, embedding);
+    await _refreshFts(id);
+  });
 
   /// Text edit from the detail screen: cheap write first; callers re-run analysis afterwards.
   Future<void> setBody(String id, String body) async {
-    await (db.update(db.notes)..where((n) => n.id.equals(id))).write(NotesCompanion(body: Value(body), updatedAt: Value(DateTime.now())));
+    await (db.update(
+      db.notes,
+    )..where((n) => n.id.equals(id))).write(NotesCompanion(body: Value(body), updatedAt: Value(DateTime.now())));
     await _refreshFts(id);
   }
 
   /// Sets the title. A title typed by the user ([lock] = true) survives re-analysis; clearing it
   /// hands control back to the AI (the next analysis derives a title again).
   Future<void> setTitle(String id, String title, {bool lock = false}) async {
-    await (db.update(db.notes)..where((n) => n.id.equals(id))).write(NotesCompanion(
-      title: Value(title),
-      titleLocked: Value(lock && title.trim().isNotEmpty),
-      updatedAt: Value(DateTime.now()),
-    ));
+    await (db.update(db.notes)..where((n) => n.id.equals(id))).write(
+      NotesCompanion(
+        title: Value(title),
+        titleLocked: Value(lock && title.trim().isNotEmpty),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
     await _refreshFts(id);
   }
 
   /// Sets or clears (`null` = back to automatic) the category; a manual choice locks it.
-  Future<void> setCategory(String id, String? categoryId) =>
-      (db.update(db.notes)..where((n) => n.id.equals(id))).write(NotesCompanion(
-        categoryId: Value(categoryId),
-        categoryLocked: Value(categoryId != null),
-        updatedAt: Value(DateTime.now()),
-      ));
+  Future<void> setCategory(String id, String? categoryId) => (db.update(db.notes)..where((n) => n.id.equals(id))).write(
+    NotesCompanion(
+      categoryId: Value(categoryId),
+      categoryLocked: Value(categoryId != null),
+      updatedAt: Value(DateTime.now()),
+    ),
+  );
 
-  Future<void> setPriority(String id, int? priority) =>
-      (db.update(db.notes)..where((n) => n.id.equals(id))).write(NotesCompanion(
-        priority: priority == null ? const Value.absent() : Value(priority),
-        priorityLocked: Value(priority != null),
-        updatedAt: Value(DateTime.now()),
-      ));
+  Future<void> setPriority(String id, int? priority) => (db.update(db.notes)..where((n) => n.id.equals(id))).write(
+    NotesCompanion(
+      priority: priority == null ? const Value.absent() : Value(priority),
+      priorityLocked: Value(priority != null),
+      updatedAt: Value(DateTime.now()),
+    ),
+  );
 
   Future<void> setPinned(String id, bool pinned) =>
       (db.update(db.notes)..where((n) => n.id.equals(id))).write(NotesCompanion(pinned: Value(pinned)));
@@ -198,7 +228,9 @@ class NoteRepository {
   }
 
   Future<void> purgeDeletedBefore(DateTime cutoff) async {
-    final ids = await (db.select(db.notes)..where((n) => n.deletedAt.isSmallerThanValue(cutoff))).map((r) => r.id).get();
+    final ids = await (db.select(
+      db.notes,
+    )..where((n) => n.deletedAt.isSmallerThanValue(cutoff))).map((r) => r.id).get();
     for (final id in ids) {
       await db.customStatement('DELETE FROM notes_fts WHERE rowid = (SELECT rowid FROM notes WHERE id = ?)', [id]);
       await (db.delete(db.notes)..where((n) => n.id.equals(id))).go();
@@ -230,21 +262,27 @@ class NoteRepository {
   }
 
   // ── checklist
-  Future<void> setChecklistChecked(String itemId, bool checked) =>
-      (db.update(db.checklistItems)..where((i) => i.id.equals(itemId))).write(ChecklistItemsCompanion(checked: Value(checked)));
+  Future<void> setChecklistChecked(String itemId, bool checked) => (db.update(
+    db.checklistItems,
+  )..where((i) => i.id.equals(itemId))).write(ChecklistItemsCompanion(checked: Value(checked)));
 
   Future<void> addChecklistItem(String noteId, String label) async {
-    final max = await (db.selectOnly(db.checklistItems)
-          ..addColumns([db.checklistItems.position.max()])
-          ..where(db.checklistItems.noteId.equals(noteId)))
-        .map((r) => r.read(db.checklistItems.position.max()))
-        .getSingle();
-    await db.into(db.checklistItems).insert(ChecklistItemsCompanion.insert(
-          id: Ulid.next(),
-          noteId: noteId,
-          label: label,
-          position: (max ?? -1) + 1,
-        ));
+    final max =
+        await (db.selectOnly(db.checklistItems)
+              ..addColumns([db.checklistItems.position.max()])
+              ..where(db.checklistItems.noteId.equals(noteId)))
+            .map((r) => r.read(db.checklistItems.position.max()))
+            .getSingle();
+    await db
+        .into(db.checklistItems)
+        .insert(
+          ChecklistItemsCompanion.insert(
+            id: Ulid.next(),
+            noteId: noteId,
+            label: label,
+            position: (max ?? -1) + 1,
+          ),
+        );
     await _refreshFts(noteId);
   }
 
@@ -254,42 +292,55 @@ class NoteRepository {
   }
 
   /// Converts a plain text note into a checklist (used by the "Make checklist" suggestion).
-  Future<void> convertToChecklist(String noteId, List<ChecklistItemDraft> items, {String? title}) => db.transaction(() async {
+  Future<void> convertToChecklist(String noteId, List<ChecklistItemDraft> items, {String? title}) =>
+      db.transaction(() async {
         await (db.delete(db.checklistItems)..where((i) => i.noteId.equals(noteId))).go();
         for (var i = 0; i < items.length; i++) {
-          await db.into(db.checklistItems).insert(ChecklistItemsCompanion.insert(
-                id: Ulid.next(),
-                noteId: noteId,
-                label: items[i].text,
-                checked: Value(items[i].checked),
-                position: i,
-              ));
+          await db
+              .into(db.checklistItems)
+              .insert(
+                ChecklistItemsCompanion.insert(
+                  id: Ulid.next(),
+                  noteId: noteId,
+                  label: items[i].text,
+                  checked: Value(items[i].checked),
+                  position: i,
+                ),
+              );
         }
-        await (db.update(db.notes)..where((n) => n.id.equals(noteId))).write(NotesCompanion(
-          kind: Value(NoteKind.checklist.name),
-          title: title == null ? const Value.absent() : Value(title),
-          updatedAt: Value(DateTime.now()),
-        ));
+        await (db.update(db.notes)..where((n) => n.id.equals(noteId))).write(
+          NotesCompanion(
+            kind: Value(NoteKind.checklist.name),
+            title: title == null ? const Value.absent() : Value(title),
+            updatedAt: Value(DateTime.now()),
+          ),
+        );
         await _refreshFts(noteId);
       });
 
   // ── attachments
   Future<void> addImages(String noteId, List<String> paths) => db.transaction(() async {
-        final count = (await (db.select(db.attachments)..where((a) => a.noteId.equals(noteId))).get()).length;
-        for (var i = 0; i < paths.length; i++) {
-          await db.into(db.attachments).insert(AttachmentsCompanion.insert(
-                id: Ulid.next(),
-                noteId: noteId,
-                kind: 'image',
-                uri: paths[i],
-                position: Value(count + i),
-              ));
-        }
-        await (db.update(db.notes)..where((n) => n.id.equals(noteId))).write(NotesCompanion(
-          kind: Value(NoteKind.image.name),
-          updatedAt: Value(DateTime.now()),
-        ));
-      });
+    final count = (await (db.select(db.attachments)..where((a) => a.noteId.equals(noteId))).get()).length;
+    for (var i = 0; i < paths.length; i++) {
+      await db
+          .into(db.attachments)
+          .insert(
+            AttachmentsCompanion.insert(
+              id: Ulid.next(),
+              noteId: noteId,
+              kind: 'image',
+              uri: paths[i],
+              position: Value(count + i),
+            ),
+          );
+    }
+    await (db.update(db.notes)..where((n) => n.id.equals(noteId))).write(
+      NotesCompanion(
+        kind: Value(NoteKind.image.name),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  });
 
   Future<String?> removeAttachment(String attachmentId) async {
     final row = await (db.select(db.attachments)..where((a) => a.id.equals(attachmentId))).getSingleOrNull();
@@ -302,46 +353,58 @@ class NoteRepository {
   Future<void> updateLinkPreview(String attachmentId, {String? title, String? description, String? imageUrl}) async {
     final row = await (db.select(db.attachments)..where((a) => a.id.equals(attachmentId))).getSingleOrNull();
     if (row == null) return;
-    await (db.update(db.attachments)..where((a) => a.id.equals(attachmentId))).write(AttachmentsCompanion(
-      title: Value(title),
-      description: Value(description),
-      imageUrl: Value(imageUrl),
-    ));
+    await (db.update(db.attachments)..where((a) => a.id.equals(attachmentId))).write(
+      AttachmentsCompanion(
+        title: Value(title),
+        description: Value(description),
+        imageUrl: Value(imageUrl),
+      ),
+    );
     await _refreshFts(row.noteId);
   }
 
   Future<List<AttachmentRow>> linksWithoutPreview({int limit = 20}) =>
-      (db.select(db.attachments)..where((a) => a.kind.equals('link') & a.title.isNull())..limit(limit)).get();
+      (db.select(db.attachments)
+            ..where((a) => a.kind.equals('link') & a.title.isNull())
+            ..limit(limit))
+          .get();
 
   // ── tasks
-  Future<void> setTaskDone(String taskId, bool done) =>
-      (db.update(db.tasks)..where((t) => t.id.equals(taskId))).write(TasksCompanion(
-        done: Value(done),
-        doneAt: Value(done ? DateTime.now() : null),
-      ));
+  Future<void> setTaskDone(String taskId, bool done) => (db.update(db.tasks)..where((t) => t.id.equals(taskId))).write(
+    TasksCompanion(
+      done: Value(done),
+      doneAt: Value(done ? DateTime.now() : null),
+    ),
+  );
 
   Future<void> deleteTask(String taskId) => (db.delete(db.tasks)..where((t) => t.id.equals(taskId))).go();
 
   Future<String> addTask(String noteId, String title, {DateTime? due, bool hasTime = false}) async {
     final id = Ulid.next();
-    await db.into(db.tasks).insert(TasksCompanion.insert(
-          id: id,
-          noteId: noteId,
-          title: title,
-          dueAt: Value(due),
-          hasTime: Value(hasTime),
-          origin: const Value('user'),
-          createdAt: DateTime.now(),
-        ));
+    await db
+        .into(db.tasks)
+        .insert(
+          TasksCompanion.insert(
+            id: id,
+            noteId: noteId,
+            title: title,
+            dueAt: Value(due),
+            hasTime: Value(hasTime),
+            origin: const Value('user'),
+            createdAt: DateTime.now(),
+          ),
+        );
     return id;
   }
 
   Future<void> setTaskDue(String taskId, DateTime? due, {bool hasTime = true}) =>
-      (db.update(db.tasks)..where((t) => t.id.equals(taskId))).write(TasksCompanion(
-        dueAt: Value(due),
-        hasTime: Value(hasTime),
-        origin: const Value('user'),
-      ));
+      (db.update(db.tasks)..where((t) => t.id.equals(taskId))).write(
+        TasksCompanion(
+          dueAt: Value(due),
+          hasTime: Value(hasTime),
+          origin: const Value('user'),
+        ),
+      );
 
   Future<TaskInfo?> taskById(String id) async {
     final r = await (db.select(db.tasks)..where((t) => t.id.equals(id))).getSingleOrNull();
@@ -355,12 +418,15 @@ class NoteRepository {
     final note = await (db.select(db.notes)..where((n) => n.id.equals(id))).getSingleOrNull();
     await db.customStatement('DELETE FROM notes_fts WHERE rowid = (SELECT rowid FROM notes WHERE id = ?)', [id]);
     if (note == null || note.deletedAt != null) return;
-    final items = await (db.select(db.checklistItems)..where((i) => i.noteId.equals(id))..orderBy([(i) => OrderingTerm.asc(i.position)])).get();
+    final items =
+        await (db.select(db.checklistItems)
+              ..where((i) => i.noteId.equals(id))
+              ..orderBy([(i) => OrderingTerm.asc(i.position)]))
+            .get();
     final links = await (db.select(db.attachments)..where((a) => a.noteId.equals(id) & a.kind.equals('link'))).get();
-    final tagRows = await (db.select(db.noteTags).join([innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId))])
-          ..where(db.noteTags.noteId.equals(id)))
-        .map((r) => r.read(db.tags.name)!)
-        .get();
+    final tagRows = await (db.select(db.noteTags).join([
+      innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId)),
+    ])..where(db.noteTags.noteId.equals(id))).map((r) => r.read(db.tags.name)!).get();
     final body = [
       note.body,
       ...items.map((i) => i.label),
@@ -380,12 +446,14 @@ class NoteRepository {
         .map((t) => '"${t.replaceAll('"', '""')}"*')
         .toList();
     if (tokens.isEmpty) return const {};
-    final rows = await db.customSelect(
-      'SELECT n.id AS id, bm25(notes_fts, 6.0, 1.0, 3.0) AS s FROM notes_fts '
-      'JOIN notes n ON n.rowid = notes_fts.rowid '
-      'WHERE notes_fts MATCH ?1 AND n.deleted_at IS NULL ORDER BY s LIMIT ?2',
-      variables: [Variable.withString(tokens.join(' OR ')), Variable.withInt(limit)],
-    ).get();
+    final rows = await db
+        .customSelect(
+          'SELECT n.id AS id, bm25(notes_fts, 6.0, 1.0, 3.0) AS s FROM notes_fts '
+          'JOIN notes n ON n.rowid = notes_fts.rowid '
+          'WHERE notes_fts MATCH ?1 AND n.deleted_at IS NULL ORDER BY s LIMIT ?2',
+          variables: [Variable.withString(tokens.join(' OR ')), Variable.withInt(limit)],
+        )
+        .get();
     return {
       for (final r in rows)
         r.read<String>('id'): () {
@@ -401,7 +469,9 @@ class NoteRepository {
 
   Future<void> upsertEmbedding(String noteId, EmbeddingPayload p) => _upsertEmbedding(noteId, p);
 
-  Future<void> _upsertEmbedding(String noteId, EmbeddingPayload p) => db.into(db.embeddings).insert(
+  Future<void> _upsertEmbedding(String noteId, EmbeddingPayload p) => db
+      .into(db.embeddings)
+      .insert(
         EmbeddingsCompanion.insert(
           noteId: noteId,
           modelId: p.modelId,
@@ -421,9 +491,10 @@ class NoteRepository {
   Future<List<StoredEmbedding>> loadEmbeddings() async {
     final rows = await (db.select(db.embeddings).join([
       innerJoin(db.notes, db.notes.id.equalsExp(db.embeddings.noteId)),
-    ])..where(db.notes.deletedAt.isNull()))
-        .get();
-    final tagRows = await db.select(db.noteTags).join([innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId))]).get();
+    ])..where(db.notes.deletedAt.isNull())).get();
+    final tagRows = await db.select(db.noteTags).join([
+      innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId)),
+    ]).get();
     final tagsByNote = <String, Set<String>>{};
     for (final r in tagRows) {
       tagsByNote.putIfAbsent(r.readTable(db.noteTags).noteId, () => {}).add(r.readTable(db.tags).name);
@@ -448,13 +519,15 @@ class NoteRepository {
 
   /// Ids of notes whose embedding is missing or was produced by another model/ontology.
   Future<List<NoteRow>> notesNeedingReindex(String modelId, int ontologyVersion) async {
-    final rows = await db.customSelect(
-      'SELECT n.id AS id FROM notes n LEFT JOIN embeddings e ON e.note_id = n.id '
-      'WHERE n.deleted_at IS NULL AND (e.note_id IS NULL OR e.model_id != ?1 OR e.ontology_version != ?2) '
-      'ORDER BY n.created_at DESC',
-      variables: [Variable.withString(modelId), Variable.withInt(ontologyVersion)],
-      readsFrom: {db.notes, db.embeddings},
-    ).get();
+    final rows = await db
+        .customSelect(
+          'SELECT n.id AS id FROM notes n LEFT JOIN embeddings e ON e.note_id = n.id '
+          'WHERE n.deleted_at IS NULL AND (e.note_id IS NULL OR e.model_id != ?1 OR e.ontology_version != ?2) '
+          'ORDER BY n.created_at DESC',
+          variables: [Variable.withString(modelId), Variable.withInt(ontologyVersion)],
+          readsFrom: {db.notes, db.embeddings},
+        )
+        .get();
     final ids = rows.map((r) => r.read<String>('id')).toList();
     if (ids.isEmpty) return const [];
     return (db.select(db.notes)..where((n) => n.id.isIn(ids))).get();
@@ -462,20 +535,29 @@ class NoteRepository {
 
   /// Replaces all *semantic* edges touching [noteId].
   Future<void> replaceEdges(String noteId, List<StoredEdge> edges) => db.transaction(() async {
-        await (db.delete(db.edges)..where((e) => (e.a.equals(noteId) | e.b.equals(noteId)) & e.kind.equals('semantic'))).go();
-        for (final e in edges) {
-          final a = e.a.compareTo(e.b) < 0 ? e.a : e.b;
-          final b = e.a.compareTo(e.b) < 0 ? e.b : e.a;
-          await db.into(db.edges).insert(
-                EdgesCompanion.insert(a: a, b: b, weight: e.weight, kind: Value(e.kind), reason: Value(e.reason)),
-                mode: InsertMode.insertOrReplace,
-              );
-        }
-      });
+    await (db.delete(
+      db.edges,
+    )..where((e) => (e.a.equals(noteId) | e.b.equals(noteId)) & e.kind.equals('semantic'))).go();
+    for (final e in edges) {
+      final a = e.a.compareTo(e.b) < 0 ? e.a : e.b;
+      final b = e.a.compareTo(e.b) < 0 ? e.b : e.a;
+      await db
+          .into(db.edges)
+          .insert(
+            EdgesCompanion.insert(a: a, b: b, weight: e.weight, kind: Value(e.kind), reason: Value(e.reason)),
+            mode: InsertMode.insertOrReplace,
+          );
+    }
+  });
 
-  Stream<List<StoredEdge>> watchEdges() => db.select(db.edges).watch().map((rows) => [
-        for (final r in rows) StoredEdge(r.a, r.b, r.weight, r.kind, r.reason),
-      ]);
+  Stream<List<StoredEdge>> watchEdges() => db
+      .select(db.edges)
+      .watch()
+      .map(
+        (rows) => [
+          for (final r in rows) StoredEdge(r.a, r.b, r.weight, r.kind, r.reason),
+        ],
+      );
 
   Future<List<StoredEdge>> edgesFor(String noteId) async {
     final rows = await (db.select(db.edges)..where((e) => e.a.equals(noteId) | e.b.equals(noteId))).get();
@@ -485,9 +567,9 @@ class NoteRepository {
   // ─────────────────────────────── reads ───────────────────────────────
 
   Selectable<QueryRow> _trigger() => db.customSelect(
-        'SELECT 1',
-        readsFrom: {db.notes, db.noteTags, db.tags, db.tasks, db.checklistItems, db.attachments},
-      );
+    'SELECT 1',
+    readsFrom: {db.notes, db.noteTags, db.tags, db.tasks, db.checklistItems, db.attachments},
+  );
 
   /// Notes for the library, newest first (pinned first). Re-emits on any relevant change.
   Stream<List<NoteSummary>> watchSummaries({String? categoryId, String? tag, int limit = 1000}) =>
@@ -498,11 +580,15 @@ class NoteRepository {
     if (categoryId != null) q.where((n) => n.categoryId.equals(categoryId));
     if (ids != null) q.where((n) => n.id.isIn(ids));
     if (tag != null) {
-      q.where((n) => n.id.isInQuery(db.selectOnly(db.noteTags).join([
-            innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId)),
-          ])
+      q.where(
+        (n) => n.id.isInQuery(
+          db.selectOnly(db.noteTags).join([
+              innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId)),
+            ])
             ..addColumns([db.noteTags.noteId])
-            ..where(db.tags.name.equals(tag))));
+            ..where(db.tags.name.equals(tag)),
+        ),
+      );
     }
     q
       ..orderBy([(n) => OrderingTerm.desc(n.pinned), (n) => OrderingTerm.desc(n.createdAt)])
@@ -511,10 +597,11 @@ class NoteRepository {
     if (notes.isEmpty) return const [];
     final noteIds = notes.map((n) => n.id).toList();
 
-    final tagRows = await (db.select(db.noteTags).join([innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId))])
-          ..where(db.noteTags.noteId.isIn(noteIds))
-          ..orderBy([OrderingTerm.desc(db.noteTags.confidence)]))
-        .get();
+    final tagRows =
+        await (db.select(db.noteTags).join([innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId))])
+              ..where(db.noteTags.noteId.isIn(noteIds))
+              ..orderBy([OrderingTerm.desc(db.noteTags.confidence)]))
+            .get();
     final tags = <String, List<TagInfo>>{};
     for (final r in tagRows) {
       final nt = r.readTable(db.noteTags);
@@ -535,10 +622,11 @@ class NoteRepository {
       checkTotal[c.noteId] = (checkTotal[c.noteId] ?? 0) + 1;
       if (c.checked) checkDone[c.noteId] = (checkDone[c.noteId] ?? 0) + 1;
     }
-    final attRows = await (db.select(db.attachments)
-          ..where((a) => a.noteId.isIn(noteIds))
-          ..orderBy([(a) => OrderingTerm.asc(a.position)]))
-        .get();
+    final attRows =
+        await (db.select(db.attachments)
+              ..where((a) => a.noteId.isIn(noteIds))
+              ..orderBy([(a) => OrderingTerm.asc(a.position)]))
+            .get();
     final images = <String, List<String>>{};
     final linkHost = <String, String>{};
     for (final a in attRows) {
@@ -585,19 +673,31 @@ class NoteRepository {
     return s.length > 140 ? '${s.substring(0, 140)}…' : s;
   }
 
-  Stream<NoteDetail?> watchNote(String id) =>
-      _trigger().watch().asyncMap((_) => loadNote(id));
+  Stream<NoteDetail?> watchNote(String id) => _trigger().watch().asyncMap((_) => loadNote(id));
 
   Future<NoteDetail?> loadNote(String id) async {
     final n = await (db.select(db.notes)..where((r) => r.id.equals(id) & r.deletedAt.isNull())).getSingleOrNull();
     if (n == null) return null;
-    final tagRows = await (db.select(db.noteTags).join([innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId))])
-          ..where(db.noteTags.noteId.equals(id))
-          ..orderBy([OrderingTerm.desc(db.noteTags.confidence)]))
-        .get();
-    final items = await (db.select(db.checklistItems)..where((c) => c.noteId.equals(id))..orderBy([(c) => OrderingTerm.asc(c.position)])).get();
-    final atts = await (db.select(db.attachments)..where((a) => a.noteId.equals(id))..orderBy([(a) => OrderingTerm.asc(a.position)])).get();
-    final tasks = await (db.select(db.tasks)..where((t) => t.noteId.equals(id))..orderBy([(t) => OrderingTerm.asc(t.done), (t) => OrderingTerm.asc(t.dueAt)])).get();
+    final tagRows =
+        await (db.select(db.noteTags).join([innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId))])
+              ..where(db.noteTags.noteId.equals(id))
+              ..orderBy([OrderingTerm.desc(db.noteTags.confidence)]))
+            .get();
+    final items =
+        await (db.select(db.checklistItems)
+              ..where((c) => c.noteId.equals(id))
+              ..orderBy([(c) => OrderingTerm.asc(c.position)]))
+            .get();
+    final atts =
+        await (db.select(db.attachments)
+              ..where((a) => a.noteId.equals(id))
+              ..orderBy([(a) => OrderingTerm.asc(a.position)]))
+            .get();
+    final tasks =
+        await (db.select(db.tasks)
+              ..where((t) => t.noteId.equals(id))
+              ..orderBy([(t) => OrderingTerm.asc(t.done), (t) => OrderingTerm.asc(t.dueAt)]))
+            .get();
     return NoteDetail(
       id: n.id,
       title: n.title,
@@ -614,9 +714,12 @@ class NoteRepository {
       createdAt: n.createdAt,
       updatedAt: n.updatedAt,
       tags: [
-        for (final r in tagRows) TagInfo(r.readTable(db.tags).name, r.readTable(db.noteTags).source, r.readTable(db.noteTags).confidence),
+        for (final r in tagRows)
+          TagInfo(r.readTable(db.tags).name, r.readTable(db.noteTags).source, r.readTable(db.noteTags).confidence),
       ],
-      checklist: [for (final c in items) ChecklistEntry(id: c.id, label: c.label, checked: c.checked, position: c.position)],
+      checklist: [
+        for (final c in items) ChecklistEntry(id: c.id, label: c.label, checked: c.checked, position: c.position),
+      ],
       attachments: [
         for (final a in atts)
           AttachmentInfo(
@@ -634,50 +737,72 @@ class NoteRepository {
   }
 
   TaskInfo _task(TaskRow t, {String? noteTitle, String? categoryId}) => TaskInfo(
-        id: t.id,
-        noteId: t.noteId,
-        title: t.title,
-        done: t.done,
-        dueAt: t.dueAt,
-        hasTime: t.hasTime,
-        isDeadline: t.isDeadline,
-        priority: t.priority,
-        noteTitle: noteTitle,
-        categoryId: categoryId,
-      );
+    id: t.id,
+    noteId: t.noteId,
+    title: t.title,
+    done: t.done,
+    dueAt: t.dueAt,
+    hasTime: t.hasTime,
+    isDeadline: t.isDeadline,
+    priority: t.priority,
+    noteTitle: noteTitle,
+    categoryId: categoryId,
+  );
 
   /// All tasks of live notes, open first, soonest due first.
-  Stream<List<TaskInfo>> watchTasks() => (db.select(db.tasks).join([innerJoin(db.notes, db.notes.id.equalsExp(db.tasks.noteId))])
-        ..where(db.notes.deletedAt.isNull())
-        ..orderBy([OrderingTerm.asc(db.tasks.done), OrderingTerm.asc(db.tasks.dueAt), OrderingTerm.desc(db.tasks.createdAt)]))
-      .watch()
-      .map((rows) => [
-            for (final r in rows)
-              _task(r.readTable(db.tasks), noteTitle: r.readTable(db.notes).title, categoryId: r.readTable(db.notes).categoryId),
-          ]);
+  Stream<List<TaskInfo>> watchTasks() =>
+      (db.select(db.tasks).join([innerJoin(db.notes, db.notes.id.equalsExp(db.tasks.noteId))])
+            ..where(db.notes.deletedAt.isNull())
+            ..orderBy([
+              OrderingTerm.asc(db.tasks.done),
+              OrderingTerm.asc(db.tasks.dueAt),
+              OrderingTerm.desc(db.tasks.createdAt),
+            ]))
+          .watch()
+          .map(
+            (rows) => [
+              for (final r in rows)
+                _task(
+                  r.readTable(db.tasks),
+                  noteTitle: r.readTable(db.notes).title,
+                  categoryId: r.readTable(db.notes).categoryId,
+                ),
+            ],
+          );
 
   Future<List<TaskInfo>> openTasksWithReminders() async {
-    final rows = await (db.select(db.tasks).join([innerJoin(db.notes, db.notes.id.equalsExp(db.tasks.noteId))])
-          ..where(db.notes.deletedAt.isNull() & db.tasks.done.equals(false) & db.tasks.dueAt.isNotNull()))
-        .get();
+    final rows = await (db.select(db.tasks).join([
+      innerJoin(db.notes, db.notes.id.equalsExp(db.tasks.noteId)),
+    ])..where(db.notes.deletedAt.isNull() & db.tasks.done.equals(false) & db.tasks.dueAt.isNotNull())).get();
     return [for (final r in rows) _task(r.readTable(db.tasks), noteTitle: r.readTable(db.notes).title)];
   }
 
   /// `{categoryId: count}` for the library filter bar.
-  Stream<Map<String?, int>> watchCategoryCounts() => db.customSelect(
+  Stream<Map<String?, int>> watchCategoryCounts() => db
+      .customSelect(
         'SELECT category_id AS c, COUNT(*) AS n FROM notes WHERE deleted_at IS NULL GROUP BY category_id',
         readsFrom: {db.notes},
-      ).watch().map((rows) => {for (final r in rows) r.readNullable<String>('c'): r.read<int>('n')});
+      )
+      .watch()
+      .map((rows) => {for (final r in rows) r.readNullable<String>('c'): r.read<int>('n')});
 
-  Stream<int> watchNoteCount() => db.customSelect('SELECT COUNT(*) AS n FROM notes WHERE deleted_at IS NULL', readsFrom: {db.notes}).watchSingle().map((r) => r.read<int>('n'));
+  Stream<int> watchNoteCount() => db
+      .customSelect('SELECT COUNT(*) AS n FROM notes WHERE deleted_at IS NULL', readsFrom: {db.notes})
+      .watchSingle()
+      .map((r) => r.read<int>('n'));
 
   Future<int> noteCount() async =>
-      (await db.customSelect('SELECT COUNT(*) AS n FROM notes WHERE deleted_at IS NULL', readsFrom: {db.notes}).getSingle()).read<int>('n');
+      (await db
+              .customSelect('SELECT COUNT(*) AS n FROM notes WHERE deleted_at IS NULL', readsFrom: {db.notes})
+              .getSingle())
+          .read<int>('n');
 
   /// Nodes for the knowledge graph.
   Future<List<GraphNoteRow>> graphNotes() async {
     final notes = await (db.select(db.notes)..where((n) => n.deletedAt.isNull())).get();
-    final tagRows = await db.select(db.noteTags).join([innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId))]).get();
+    final tagRows = await db.select(db.noteTags).join([
+      innerJoin(db.tags, db.tags.id.equalsExp(db.noteTags.tagId)),
+    ]).get();
     final tags = <String, List<String>>{};
     for (final r in tagRows) {
       tags.putIfAbsent(r.readTable(db.noteTags).noteId, () => []).add(r.readTable(db.tags).name);
@@ -697,7 +822,9 @@ class NoteRepository {
 
   /// Notes changed since they were last analysed - used by tests and diagnostics.
   Future<int> embeddingCount() async =>
-      (await db.customSelect('SELECT COUNT(*) AS n FROM embeddings', readsFrom: {db.embeddings}).getSingle()).read<int>('n');
+      (await db.customSelect('SELECT COUNT(*) AS n FROM embeddings', readsFrom: {db.embeddings}).getSingle()).read<int>(
+        'n',
+      );
 
   // ─────────────────────────────── export ───────────────────────────────
 
@@ -718,8 +845,12 @@ class NoteRepository {
         'createdAt': d.createdAt.toIso8601String(),
         'updatedAt': d.updatedAt.toIso8601String(),
         'tags': [for (final t in d.tags) t.name],
-        'checklist': [for (final c in d.checklist) {'label': c.label, 'checked': c.checked}],
-        'links': [for (final l in d.links) {'url': l.uri, 'title': l.title}],
+        'checklist': [
+          for (final c in d.checklist) {'label': c.label, 'checked': c.checked},
+        ],
+        'links': [
+          for (final l in d.links) {'url': l.uri, 'title': l.title},
+        ],
         'images': [for (final i in d.images) i.uri],
         'tasks': [
           for (final t in d.tasks) {'title': t.title, 'due': t.dueAt?.toIso8601String(), 'done': t.done},

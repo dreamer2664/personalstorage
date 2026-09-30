@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Static app shortcuts (long-press the launcher icon). `app_id` is generated from applicationId. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="capture"
+        android:enabled="true"
+        android:icon="@drawable/ic_widget_add"
+        android:shortcutShortLabel="@string/shortcut_capture_short"
+        android:shortcutLongLabel="@string/shortcut_capture_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="personalstorage:///capture"
+            android:targetPackage="@string/app_id"
+            android:targetClass="com.personalstorage.personalstorage.MainActivity"/>
+    </shortcut>
+    <shortcut
+        android:shortcutId="voice"
+        android:enabled="true"
+        android:icon="@drawable/ic_widget_mic"
+        android:shortcutShortLabel="@string/shortcut_voice_short"
+        android:shortcutLongLabel="@string/shortcut_voice_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="personalstorage:///voice"
+            android:targetPackage="@string/app_id"
+            android:targetClass="com.personalstorage.personalstorage.MainActivity"/>
+    </shortcut>
+</shortcuts>

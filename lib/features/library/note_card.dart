@@ -60,15 +60,32 @@ class NoteCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(children: [
-                        if (note.pinned) ...[Icon(CupertinoIcons.pin_fill, size: 12, color: ps.warning), const SizedBox(width: 4)],
-                        Expanded(child: Text(note.title, maxLines: compact ? 1 : 2, overflow: TextOverflow.ellipsis, style: PsText.headline(ps.label))),
-                        const SizedBox(width: 8),
-                        Text(TimeFormat.ago(note.createdAt, now), style: PsText.caption(ps.tertiaryLabel)),
-                      ]),
+                      Row(
+                        children: [
+                          if (note.pinned) ...[
+                            Icon(CupertinoIcons.pin_fill, size: 12, color: ps.warning),
+                            const SizedBox(width: 4),
+                          ],
+                          Expanded(
+                            child: Text(
+                              note.title,
+                              maxLines: compact ? 1 : 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: PsText.headline(ps.label),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(TimeFormat.ago(note.createdAt, now), style: PsText.caption(ps.tertiaryLabel)),
+                        ],
+                      ),
                       if (note.snippet.isNotEmpty && note.kind != NoteKind.checklist) ...[
                         const SizedBox(height: 3),
-                        Text(note.snippet, maxLines: 2, overflow: TextOverflow.ellipsis, style: PsText.subhead(ps.secondaryLabel)),
+                        Text(
+                          note.snippet,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: PsText.subhead(ps.secondaryLabel),
+                        ),
                       ],
                     ],
                   ),
@@ -81,11 +98,20 @@ class NoteCard extends StatelessWidget {
             ],
             if (note.kind == NoteKind.link && note.linkHost != null) ...[
               const SizedBox(height: 8),
-              Row(children: [
-                Icon(CupertinoIcons.link, size: 13, color: ps.accent),
-                const SizedBox(width: 5),
-                Flexible(child: Text(note.linkHost!, maxLines: 1, overflow: TextOverflow.ellipsis, style: PsText.footnote(ps.accent))),
-              ]),
+              Row(
+                children: [
+                  Icon(CupertinoIcons.link, size: 13, color: ps.accent),
+                  const SizedBox(width: 5),
+                  Flexible(
+                    child: Text(
+                      note.linkHost!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: PsText.footnote(ps.accent),
+                    ),
+                  ),
+                ],
+              ),
             ],
             if (_hasMeta) ...[
               const SizedBox(height: 10),
@@ -115,17 +141,27 @@ class NoteCard extends StatelessWidget {
                       label: note.priority >= 3 ? 'High' : 'Medium',
                       color: note.priority >= 3 ? ps.danger : ps.warning,
                     ),
-                  for (final t in note.tags.take(compact ? 2 : 3)) PsChip(dense: true, label: '#${t.name}', color: t.isUser ? ps.accent : cat.color),
+                  for (final t in note.tags.take(compact ? 2 : 3))
+                    PsChip(dense: true, label: '#${t.name}', color: t.isUser ? ps.accent : cat.color),
                 ],
               ),
             ],
             if (reasons.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Row(children: [
-                Icon(CupertinoIcons.sparkles, size: 12, color: ps.accent),
-                const SizedBox(width: 5),
-                Expanded(child: Text(reasons.join(' · '), maxLines: 1, overflow: TextOverflow.ellipsis, style: PsText.caption(ps.accent))),
-              ]),
+              Row(
+                children: [
+                  Icon(CupertinoIcons.sparkles, size: 12, color: ps.accent),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Text(
+                      reasons.join(' · '),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: PsText.caption(ps.accent),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ],
         ),

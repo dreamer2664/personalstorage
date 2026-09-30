@@ -45,23 +45,27 @@ class EnrichmentService {
 
   Future<void> enqueue(String label, Future<void> Function() job) {
     _pending++;
-    final run = _tail.then((_) => job()).catchError((Object e, StackTrace s) {
-      debugPrint('Enrichment job "$label" failed: $e');
-    }).whenComplete(() => _pending--);
+    final run = _tail
+        .then((_) => job())
+        .catchError((Object e, StackTrace s) {
+          debugPrint('Enrichment job "$label" failed: $e');
+        })
+        .whenComplete(() => _pending--);
     _tail = run;
     return run;
   }
 
   /// Called right after a note was saved.
   Future<void> onNoteCaptured(String noteId) => enqueue('captured:$noteId', () async {
-        await refreshEdges(noteId);
-        await _fetchPreviewsFor(noteId);
-      });
+    await refreshEdges(noteId);
+    await _fetchPreviewsFor(noteId);
+  });
 
   Future<void> refreshEdges(String noteId) async {
     final neighbors = brain.index.neighbors(noteId, k: edgesPerNote, minRelatedness: storeThreshold);
     await repo.replaceEdges(noteId, [
-      for (final n in neighbors) StoredEdge(noteId, n.id, n.score, 'semantic', n.reasons.isEmpty ? null : n.reasons.first),
+      for (final n in neighbors)
+        StoredEdge(noteId, n.id, n.score, 'semantic', n.reasons.isEmpty ? null : n.reasons.first),
     ]);
   }
 
@@ -87,10 +91,7 @@ class EnrichmentService {
   Future<void> _reanalyze(String noteId, {bool retitleLinks = false, bool convert = true}) async {
     final d = await repo.loadNote(noteId);
     if (d == null) return;
-    final context = d.links
-        .map((l) => [?l.title, ?l.description].join('. '))
-        .where((s) => s.isNotEmpty)
-        .join('\n');
+    final context = d.links.map((l) => [?l.title, ?l.description].join('. ')).where((s) => s.isNotEmpty).join('\n');
     final a = await brain.brain.analyze(
       d.body,
       now: DateTime.now(),
@@ -118,24 +119,29 @@ class EnrichmentService {
   /// Re-embeds notes whose vectors are missing or stem from another model/ontology version,
   /// and back-fills missing link previews. Runs in small batches so the UI stays smooth.
   Future<void> reindexStale() => enqueue('reindexStale', () async {
-        final stale = await repo.notesNeedingReindex(brain.modelId, brain.ontologyVersion);
-        var n = 0;
-        for (final row in stale) {
-          final d = await repo.loadNote(row.id);
-          if (d == null) continue;
-          final a = await brain.brain.analyze(d.body, now: DateTime.now(), imageCount: d.images.length, allowAutoChecklist: d.checklist.isEmpty);
-          await repo.applyAnalysis(row.id, body: d.body, analysis: a, embedding: brain.payload(a));
-          brain.index.upsert(IndexedNote.fromAnalysis(row.id, a, d.createdAt));
-          if (++n % 20 == 0) await Future<void>.delayed(Duration.zero);
-        }
-        for (final row in stale) {
-          await refreshEdges(row.id);
-          if (++n % 20 == 0) await Future<void>.delayed(Duration.zero);
-        }
-        if (fetchPreviews()) {
-          for (final att in await repo.linksWithoutPreview()) {
-            await _fetchPreviewsFor(att.noteId);
-          }
-        }
-      });
+    final stale = await repo.notesNeedingReindex(brain.modelId, brain.ontologyVersion);
+    var n = 0;
+    for (final row in stale) {
+      final d = await repo.loadNote(row.id);
+      if (d == null) continue;
+      final a = await brain.brain.analyze(
+        d.body,
+        now: DateTime.now(),
+        imageCount: d.images.length,
+        allowAutoChecklist: d.checklist.isEmpty,
+      );
+      await repo.applyAnalysis(row.id, body: d.body, analysis: a, embedding: brain.payload(a));
+      brain.index.upsert(IndexedNote.fromAnalysis(row.id, a, d.createdAt));
+      if (++n % 20 == 0) await Future<void>.delayed(Duration.zero);
+    }
+    for (final row in stale) {
+      await refreshEdges(row.id);
+      if (++n % 20 == 0) await Future<void>.delayed(Duration.zero);
+    }
+    if (fetchPreviews()) {
+      for (final att in await repo.linksWithoutPreview()) {
+        await _fetchPreviewsFor(att.noteId);
+      }
+    }
+  });
 }

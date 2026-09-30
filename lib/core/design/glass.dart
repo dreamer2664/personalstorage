@@ -55,7 +55,10 @@ class GlassPanel extends StatelessWidget {
         child: BackdropFilter(filter: GlassQuality.filter, child: surface),
       );
     } else {
-      surface = ClipPath(clipper: ShapeBorderClipper(shape: shape), child: surface);
+      surface = ClipPath(
+        clipper: ShapeBorderClipper(shape: shape),
+        child: surface,
+      );
     }
     if (shadow) {
       surface = DecoratedBox(
@@ -63,7 +66,11 @@ class GlassPanel extends StatelessWidget {
           shape: shape,
           shadows: [
             BoxShadow(color: ps.shadow, blurRadius: 28, offset: const Offset(0, 10)),
-            BoxShadow(color: ps.shadow.withValues(alpha: ps.shadow.a * 0.5), blurRadius: 3, offset: const Offset(0, 1)),
+            BoxShadow(
+              color: ps.shadow.withValues(alpha: ps.shadow.a * 0.5),
+              blurRadius: 3,
+              offset: const Offset(0, 1),
+            ),
           ],
         ),
         child: surface,

@@ -39,7 +39,10 @@ class MicButton extends StatelessWidget {
                   curve: Curves.easeOut,
                   width: listening ? 56 + 30 * level * k : 56,
                   height: listening ? 56 + 30 * level * k : 56,
-                  decoration: BoxDecoration(shape: BoxShape.circle, color: color.withValues(alpha: listening ? 0.12 * k + 0.05 : 0)),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color.withValues(alpha: listening ? 0.12 * k + 0.05 : 0),
+                  ),
                 ),
               AnimatedContainer(
                 duration: PsMotion.base,
@@ -53,7 +56,9 @@ class MicButton extends StatelessWidget {
                     end: Alignment.bottomRight,
                     colors: [color, Color.lerp(color, const Color(0xFF000000), 0.22)!],
                   ),
-                  boxShadow: [BoxShadow(color: color.withValues(alpha: 0.45), blurRadius: 18, offset: const Offset(0, 8))],
+                  boxShadow: [
+                    BoxShadow(color: color.withValues(alpha: 0.45), blurRadius: 18, offset: const Offset(0, 8)),
+                  ],
                 ),
                 child: AnimatedSwitcher(
                   duration: PsMotion.fast,
@@ -75,7 +80,14 @@ class MicButton extends StatelessWidget {
 
 /// Round glass button with an icon (attach photo, save, ...).
 class ActionCircle extends StatelessWidget {
-  const ActionCircle({required this.icon, required this.onTap, this.label, this.filled = false, this.enabled = true, super.key});
+  const ActionCircle({
+    required this.icon,
+    required this.onTap,
+    this.label,
+    this.filled = false,
+    this.enabled = true,
+    super.key,
+  });
 
   final IconData icon;
   final VoidCallback onTap;

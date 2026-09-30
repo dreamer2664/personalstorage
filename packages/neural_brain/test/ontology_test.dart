@@ -19,7 +19,11 @@ leaf > top | Leaf node | Foglia | one two_words ; uno
       expect(terms['start']!.anchored, isTrue);
       expect(terms['top']!.weight, 1.3, reason: 'single-word labels become terms');
       expect(o['leaf']!.termsEn.map((t) => t.phrase), contains('two words'));
-      expect(o['leaf']!.termsEn.map((t) => t.phrase), isNot(contains('leaf')), reason: 'multi-word labels are not expanded');
+      expect(
+        o['leaf']!.termsEn.map((t) => t.phrase),
+        isNot(contains('leaf')),
+        reason: 'multi-word labels are not expanded',
+      );
       expect(o['leaf']!.termsIt.map((t) => t.phrase), contains('uno'));
     });
 

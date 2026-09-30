@@ -44,7 +44,10 @@ class GraphPainter extends CustomPainter {
         style: (cluster ? PsText.headline(color) : PsText.caption(color)).copyWith(
           fontSize: cluster ? 15 : 11.5,
           fontWeight: bold || cluster ? FontWeight.w700 : FontWeight.w500,
-          shadows: [Shadow(color: ps.background.withValues(alpha: 0.95), blurRadius: 4), Shadow(color: ps.background, blurRadius: 1)],
+          shadows: [
+            Shadow(color: ps.background.withValues(alpha: 0.95), blurRadius: 4),
+            Shadow(color: ps.background, blurRadius: 1),
+          ],
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -95,7 +98,12 @@ class GraphPainter extends CustomPainter {
       }
       final color = categoryStyle(k.categoryId).color;
       final rect = Rect.fromCircle(center: Offset(cx, cy), radius: r + 26);
-      _fill.shader = ui.Gradient.radial(rect.center, rect.width / 2, [color.withValues(alpha: hasSel ? 0.05 : 0.13), color.withValues(alpha: 0)], [0.55, 1]);
+      _fill.shader = ui.Gradient.radial(
+        rect.center,
+        rect.width / 2,
+        [color.withValues(alpha: hasSel ? 0.05 : 0.13), color.withValues(alpha: 0)],
+        [0.55, 1],
+      );
       canvas.drawCircle(rect.center, rect.width / 2, _fill);
       _fill.shader = null;
     }
@@ -159,7 +167,9 @@ class GraphPainter extends CustomPainter {
         _fill.color = base.withValues(alpha: 0.95 * a);
         canvas.drawCircle(Offset(x, y), r, _fill);
         _stroke
-          ..color = (ps.isDark ? const Color(0xFFFFFFFF) : const Color(0xFFFFFFFF)).withValues(alpha: (ps.isDark ? 0.25 : 0.85) * a)
+          ..color = (ps.isDark ? const Color(0xFFFFFFFF) : const Color(0xFFFFFFFF)).withValues(
+            alpha: (ps.isDark ? 0.25 : 0.85) * a,
+          )
           ..strokeWidth = hairline;
         canvas.drawCircle(Offset(x, y), r - hairline / 2, _stroke);
       }
@@ -209,7 +219,8 @@ class GraphPainter extends CustomPainter {
       final node = g.nodes[i];
       final important = i == c.selected || (hasSel && c.neighborhood.contains(i));
       if (hasSel && !important) continue; // a selection focuses attention: hide the rest
-      final show = important ||
+      final show =
+          important ||
           s >= 1.25 ||
           (s >= 0.85 && (l.radius[i] >= 7.5 || node.type == GraphNodeType.tag)) ||
           (s >= 0.55 && node.degree >= 4 && node.type == GraphNodeType.note);

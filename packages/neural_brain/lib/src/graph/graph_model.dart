@@ -64,8 +64,8 @@ class GraphCluster {
 /// Immutable snapshot of the knowledge graph handed to the layout engine and the painter.
 class KnowledgeGraph {
   KnowledgeGraph(this.nodes, this.edges, this.clusters)
-      : indexOf = {for (var i = 0; i < nodes.length; i++) nodes[i].id: i},
-        adjacency = List.generate(nodes.length, (_) => <int>[]) {
+    : indexOf = {for (var i = 0; i < nodes.length; i++) nodes[i].id: i},
+      adjacency = List.generate(nodes.length, (_) => <int>[]) {
     for (var e = 0; e < edges.length; e++) {
       adjacency[edges[e].a].add(e);
       adjacency[edges[e].b].add(e);

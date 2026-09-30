@@ -46,8 +46,7 @@ class GraphBuilder {
     String Function(String categoryId)? categoryLabel,
   }) {
     final nodes = <GraphNode>[
-      for (final n in notes)
-        GraphNode(id: n.id, label: n.label, categoryId: n.categoryId, importance: n.importance),
+      for (final n in notes) GraphNode(id: n.id, label: n.label, categoryId: n.categoryId, importance: n.importance),
     ];
     final index = <String, int>{for (var i = 0; i < nodes.length; i++) nodes[i].id: i};
 
@@ -75,12 +74,14 @@ class GraphBuilder {
       for (final entry in byTag.entries) {
         if (entry.value.length < minTagNotes) continue;
         final tagIndex = nodes.length;
-        nodes.add(GraphNode(
-          id: 'tag:${entry.key}',
-          label: '#${entry.key}',
-          type: GraphNodeType.tag,
-          importance: 0.8 + 0.3 * math.log(entry.value.length),
-        ));
+        nodes.add(
+          GraphNode(
+            id: 'tag:${entry.key}',
+            label: '#${entry.key}',
+            type: GraphNodeType.tag,
+            importance: 0.8 + 0.3 * math.log(entry.value.length),
+          ),
+        );
         index['tag:${entry.key}'] = tagIndex;
         for (final n in entry.value) {
           list.add(GraphEdge(n, tagIndex, 0.45, kind: GraphEdgeKind.tag, reason: '#${entry.key}'));
@@ -100,7 +101,10 @@ class GraphBuilder {
     final clusterCount = membership.fold<int>(-1, math.max) + 1;
     final clusters = <GraphCluster>[];
     for (var c = 0; c < clusterCount; c++) {
-      final members = [for (var i = 0; i < nodes.length; i++) if (membership[i] == c) i];
+      final members = [
+        for (var i = 0; i < nodes.length; i++)
+          if (membership[i] == c) i,
+      ];
       clusters.add(_describe(c, members, nodes, notes, index, categoryLabel));
     }
     return KnowledgeGraph(nodes, list, clusters);

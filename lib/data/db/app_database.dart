@@ -18,24 +18,24 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async {
-          await m.createAll();
-          await _createFts();
-          await _createIndexes();
-        },
-        onUpgrade: (m, from, to) async {
-          // Add stepwise migrations here; never drop user data.
-        },
-        beforeOpen: (details) async {
-          await customStatement('PRAGMA foreign_keys = ON');
-          await customStatement('PRAGMA journal_mode = WAL');
-        },
-      );
+    onCreate: (m) async {
+      await m.createAll();
+      await _createFts();
+      await _createIndexes();
+    },
+    onUpgrade: (m, from, to) async {
+      // Add stepwise migrations here; never drop user data.
+    },
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+      await customStatement('PRAGMA journal_mode = WAL');
+    },
+  );
 
   Future<void> _createFts() => customStatement(
-        "CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(title, body, tags, "
-        "tokenize = 'unicode61 remove_diacritics 2', prefix = '2 3')",
-      );
+    "CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(title, body, tags, "
+    "tokenize = 'unicode61 remove_diacritics 2', prefix = '2 3')",
+  );
 
   Future<void> _createIndexes() async {
     await customStatement('CREATE INDEX IF NOT EXISTS idx_notes_created ON notes (created_at DESC)');

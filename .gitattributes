@@ -1,0 +1,6 @@
+# Binary assets and generated code
+*.psm binary
+*.png binary
+*.ttf binary
+*.wasm binary
+*.g.dart linguist-generated=true

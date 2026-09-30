@@ -60,27 +60,31 @@ double nodeRadiusFor(GraphNode n) {
 /// new data) calls [reheat] to wake the simulation.
 class ForceLayout {
   ForceLayout._(this.graph, this.config, this.n, this.edgeCount, this.clusterCount)
-      : x = Float64List(n),
-        y = Float64List(n),
-        vx = Float64List(n),
-        vy = Float64List(n),
-        _fx = Float64List(n),
-        _fy = Float64List(n),
-        radius = Float64List(n),
-        pinned = Uint8List(n),
-        _ea = Int32List(edgeCount),
-        _eb = Int32List(edgeCount),
-        _ew = Float64List(edgeCount),
-        _cluster = Int32List(n),
-        _degree = Float64List(n),
-        _ccx = Float64List(clusterCount),
-        _ccy = Float64List(clusterCount),
-        _ccn = Int32List(clusterCount),
-        _tree = _QuadTree(n);
+    : x = Float64List(n),
+      y = Float64List(n),
+      vx = Float64List(n),
+      vy = Float64List(n),
+      _fx = Float64List(n),
+      _fy = Float64List(n),
+      radius = Float64List(n),
+      pinned = Uint8List(n),
+      _ea = Int32List(edgeCount),
+      _eb = Int32List(edgeCount),
+      _ew = Float64List(edgeCount),
+      _cluster = Int32List(n),
+      _degree = Float64List(n),
+      _ccx = Float64List(clusterCount),
+      _ccy = Float64List(clusterCount),
+      _ccn = Int32List(clusterCount),
+      _tree = _QuadTree(n);
 
   /// Builds a layout for [graph], seeding positions on a deterministic phyllotaxis layout grouped
   /// by cluster so the first frame is already readable.
-  factory ForceLayout.fromGraph(KnowledgeGraph graph, {ForceLayoutConfig config = const ForceLayoutConfig(), int seed = 42}) {
+  factory ForceLayout.fromGraph(
+    KnowledgeGraph graph, {
+    ForceLayoutConfig config = const ForceLayoutConfig(),
+    int seed = 42,
+  }) {
     final layout = ForceLayout._(graph, config, graph.nodes.length, graph.edges.length, graph.clusters.length);
     layout._init(seed);
     return layout;
@@ -135,8 +139,14 @@ class ForceLayout {
     for (var i = 0; i < n; i++) {
       final c = _cluster[i] >= 0 ? _cluster[i] : clusterCount;
       final angleC = c * golden * 2.2;
-      final cx = math.cos(angleC) * spread * (c == clusterCount ? 1.15 : math.min(1.0, 0.35 + 0.65 * c / math.max(1, clusterCount)));
-      final cy = math.sin(angleC) * spread * (c == clusterCount ? 1.15 : math.min(1.0, 0.35 + 0.65 * c / math.max(1, clusterCount)));
+      final cx =
+          math.cos(angleC) *
+          spread *
+          (c == clusterCount ? 1.15 : math.min(1.0, 0.35 + 0.65 * c / math.max(1, clusterCount)));
+      final cy =
+          math.sin(angleC) *
+          spread *
+          (c == clusterCount ? 1.15 : math.min(1.0, 0.35 + 0.65 * c / math.max(1, clusterCount)));
       final k = counters[c]++;
       final r = 11.0 * math.sqrt(k + 0.5);
       final a = k * golden;
@@ -301,16 +311,16 @@ class ForceLayout {
 /// Barnes-Hut quadtree over flat arrays (no per-node objects -> no GC pressure).
 class _QuadTree {
   _QuadTree(int bodies)
-      : _cap = math.max(64, bodies * 8 + 64),
-        _mass = Float64List(math.max(64, bodies * 8 + 64)),
-        _comX = Float64List(math.max(64, bodies * 8 + 64)),
-        _comY = Float64List(math.max(64, bodies * 8 + 64)),
-        _cx = Float64List(math.max(64, bodies * 8 + 64)),
-        _cy = Float64List(math.max(64, bodies * 8 + 64)),
-        _half = Float64List(math.max(64, bodies * 8 + 64)),
-        _leaf = Int32List(math.max(64, bodies * 8 + 64)),
-        _child = Int32List(math.max(64, bodies * 8 + 64) * 4),
-        _stack = Int32List(512);
+    : _cap = math.max(64, bodies * 8 + 64),
+      _mass = Float64List(math.max(64, bodies * 8 + 64)),
+      _comX = Float64List(math.max(64, bodies * 8 + 64)),
+      _comY = Float64List(math.max(64, bodies * 8 + 64)),
+      _cx = Float64List(math.max(64, bodies * 8 + 64)),
+      _cy = Float64List(math.max(64, bodies * 8 + 64)),
+      _half = Float64List(math.max(64, bodies * 8 + 64)),
+      _leaf = Int32List(math.max(64, bodies * 8 + 64)),
+      _child = Int32List(math.max(64, bodies * 8 + 64) * 4),
+      _stack = Int32List(512);
 
   final int _cap;
   final Float64List _mass, _comX, _comY, _cx, _cy, _half;

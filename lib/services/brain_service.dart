@@ -33,14 +33,14 @@ class BrainService {
   int get ontologyVersion => brain.ontology.version;
 
   EmbeddingPayload payload(NoteAnalysis a) => EmbeddingPayload(
-        modelId: modelId,
-        vector: a.vector,
-        conceptsJson: jsonEncode(a.concepts.toSparse()),
-        words: a.words.toList(growable: false),
-        stems: a.stems.toList(growable: false),
-        keywords: [for (final k in a.keywords) k.phrase],
-        ontologyVersion: ontologyVersion,
-      );
+    modelId: modelId,
+    vector: a.vector,
+    conceptsJson: jsonEncode(a.concepts.toSparse()),
+    words: a.words.toList(growable: false),
+    stems: a.stems.toList(growable: false),
+    keywords: [for (final k in a.keywords) k.phrase],
+    ontologyVersion: ontologyVersion,
+  );
 
   /// Loads persisted embeddings into the index (only those produced by the current model and
   /// ontology; the rest are refreshed by the enrichment queue).

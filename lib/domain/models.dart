@@ -85,7 +85,10 @@ class TaskInfo {
     return hasTime ? d : DateTime(d.year, d.month, d.day, 9);
   }
 
-  bool isOverdue(DateTime now) => !done && dueAt != null && (hasTime ? dueAt!.isBefore(now) : dueAt!.isBefore(DateTime(now.year, now.month, now.day)));
+  bool isOverdue(DateTime now) =>
+      !done &&
+      dueAt != null &&
+      (hasTime ? dueAt!.isBefore(now) : dueAt!.isBefore(DateTime(now.year, now.month, now.day)));
 }
 
 /// Compact projection of a note for lists.

@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Personalstorage</string>
+	<string>Personal Storage</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -65,6 +65,29 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Personal Storage uses the microphone so you can dictate notes.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Speech recognition turns your dictation into text notes. On supported devices it runs entirely on-device.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose photos to attach to your notes.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Take photos to attach to your notes.</string>
+	<key>FlutterDeepLinkingEnabled</key>
+	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>app.personalstorage.capture</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>personalstorage</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>

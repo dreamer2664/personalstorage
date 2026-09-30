@@ -30,7 +30,8 @@ class TemporalExpression {
   final bool attributive;
 
   @override
-  String toString() => 'Temporal("$text" -> $value${hasTime ? '' : ' (all-day)'}'
+  String toString() =>
+      'Temporal("$text" -> $value${hasTime ? '' : ' (all-day)'}'
       '${isDeadline ? ' deadline' : ''})';
 }
 
@@ -72,13 +73,48 @@ class DateTimeParser {
   final bool dayFirst;
 
   static const Map<String, int> _months = {
-    'january': 1, 'jan': 1, 'february': 2, 'feb': 2, 'march': 3, 'mar': 3, 'april': 4,
-    'apr': 4, 'may': 5, 'june': 6, 'jun': 6, 'july': 7, 'jul': 7, 'august': 8, 'aug': 8,
-    'september': 9, 'sept': 9, 'sep': 9, 'october': 10, 'oct': 10, 'november': 11, 'nov': 11,
-    'december': 12, 'dec': 12,
-    'gennaio': 1, 'gen': 1, 'febbraio': 2, 'marzo': 3, 'aprile': 4, 'maggio': 5, 'mag': 5,
-    'giugno': 6, 'giu': 6, 'luglio': 7, 'lug': 7, 'agosto': 8, 'settembre': 9, 'ottobre': 10,
-    'ott': 10, 'novembre': 11, 'dicembre': 12, 'dic': 12,
+    'january': 1,
+    'jan': 1,
+    'february': 2,
+    'feb': 2,
+    'march': 3,
+    'mar': 3,
+    'april': 4,
+    'apr': 4,
+    'may': 5,
+    'june': 6,
+    'jun': 6,
+    'july': 7,
+    'jul': 7,
+    'august': 8,
+    'aug': 8,
+    'september': 9,
+    'sept': 9,
+    'sep': 9,
+    'october': 10,
+    'oct': 10,
+    'november': 11,
+    'nov': 11,
+    'december': 12,
+    'dec': 12,
+    'gennaio': 1,
+    'gen': 1,
+    'febbraio': 2,
+    'marzo': 3,
+    'aprile': 4,
+    'maggio': 5,
+    'mag': 5,
+    'giugno': 6,
+    'giu': 6,
+    'luglio': 7,
+    'lug': 7,
+    'agosto': 8,
+    'settembre': 9,
+    'ottobre': 10,
+    'ott': 10,
+    'novembre': 11,
+    'dicembre': 12,
+    'dic': 12,
   };
 
   static const Map<String, int> _weekdays = {
@@ -91,11 +127,40 @@ class DateTimeParser {
   };
 
   static const Map<String, int> _numbers = {
-    'a': 1, 'an': 1, 'one': 1, 'two': 2, 'three': 3, 'four': 4, 'five': 5, 'six': 6,
-    'seven': 7, 'eight': 8, 'nine': 9, 'ten': 10, 'eleven': 11, 'twelve': 12, 'fifteen': 15,
-    'twenty': 20, 'thirty': 30, 'un': 1, 'uno': 1, 'una': 1, 'due': 2, 'tre': 3, 'quattro': 4,
-    'cinque': 5, 'sei': 6, 'sette': 7, 'otto': 8, 'nove': 9, 'dieci': 10, 'undici': 11,
-    'dodici': 12, 'quindici': 15, 'venti': 20, 'trenta': 30,
+    'a': 1,
+    'an': 1,
+    'one': 1,
+    'two': 2,
+    'three': 3,
+    'four': 4,
+    'five': 5,
+    'six': 6,
+    'seven': 7,
+    'eight': 8,
+    'nine': 9,
+    'ten': 10,
+    'eleven': 11,
+    'twelve': 12,
+    'fifteen': 15,
+    'twenty': 20,
+    'thirty': 30,
+    'un': 1,
+    'uno': 1,
+    'una': 1,
+    'due': 2,
+    'tre': 3,
+    'quattro': 4,
+    'cinque': 5,
+    'sei': 6,
+    'sette': 7,
+    'otto': 8,
+    'nove': 9,
+    'dieci': 10,
+    'undici': 11,
+    'dodici': 12,
+    'quindici': 15,
+    'venti': 20,
+    'trenta': 30,
   };
 
   static final String _monthAlt = (_months.keys.toList()..sort((a, b) => b.length - a.length)).join('|');
@@ -117,7 +182,9 @@ class DateTimeParser {
 
     // --- relative offsets: "in 2 hours", "tra 3 giorni" -------------------------------------
     for (final m in RegExp(
-      r'\b(?:in|tra|fra)\s+(' '$_numAlt' r'|\d{1,3})\s*(?:(minut\w*|min|mins|hours?|hrs?|ore|ora|or[ae])|(days?|giorn[oi]|weeks?|settiman[ae]|months?|mes[ei]|years?|ann[oi]))\b',
+      r'\b(?:in|tra|fra)\s+('
+      '$_numAlt'
+      r'|\d{1,3})\s*(?:(minut\w*|min|mins|hours?|hrs?|ore|ora|or[ae])|(days?|giorn[oi]|weeks?|settiman[ae]|months?|mes[ei]|years?|ann[oi]))\b',
     ).allMatches(t)) {
       final n = int.tryParse(m.group(1)!) ?? _numbers[m.group(1)!] ?? 1;
       final short = m.group(2);
@@ -143,41 +210,54 @@ class DateTimeParser {
     for (final m in RegExp(r"\b(?:in\s+)?(?:half an hour|mezz'?ora)\b").allMatches(t)) {
       add(_Hit(_Kind.instant, m.start, m.end)..instant = now.add(const Duration(minutes: 30)));
     }
-    for (final m in RegExp(r'\b(' '$_numAlt' r'|\d{1,3})\s+(days?|weeks?|months?)\s+(?:from now|from today|later)\b').allMatches(t)) {
+    for (final m in RegExp(
+      r'\b('
+      '$_numAlt'
+      r'|\d{1,3})\s+(days?|weeks?|months?)\s+(?:from now|from today|later)\b',
+    ).allMatches(t)) {
       final n = int.tryParse(m.group(1)!) ?? _numbers[m.group(1)!] ?? 1;
       final unit = m.group(2)!;
       final h = _Hit(_Kind.date, m.start, m.end);
       h.date = unit.startsWith('d')
           ? today.add(Duration(days: n))
           : unit.startsWith('w')
-              ? today.add(Duration(days: 7 * n))
-              : _addMonths(today, n);
+          ? today.add(Duration(days: 7 * n))
+          : _addMonths(today, n);
       add(h);
     }
 
     // --- "next week", "end of the month", weekend ---------------------------------------------
     final monday = today.subtract(Duration(days: today.weekday - 1));
-    for (final m in RegExp(r'\b(?:next week|la settimana prossima|prossima settimana|settimana prossima)\b').allMatches(t)) {
+    for (final m in RegExp(
+      r'\b(?:next week|la settimana prossima|prossima settimana|settimana prossima)\b',
+    ).allMatches(t)) {
       add(_Hit(_Kind.date, m.start, m.end)..date = monday.add(const Duration(days: 7)));
     }
     for (final m in RegExp(r'\b(?:next month|il mese prossimo|prossimo mese|mese prossimo)\b').allMatches(t)) {
       add(_Hit(_Kind.date, m.start, m.end)..date = DateTime(today.year, today.month + 1, 1));
     }
-    for (final m in RegExp(r'\b(?:(this|next|questo|prossimo)\s+)?(?:weekend|fine settimana|week-end)\b').allMatches(t)) {
+    for (final m in RegExp(
+      r'\b(?:(this|next|questo|prossimo)\s+)?(?:weekend|fine settimana|week-end)\b',
+    ).allMatches(t)) {
       final next = m.group(1) == 'next' || m.group(1) == 'prossimo';
       var sat = monday.add(const Duration(days: 5));
       if (next) sat = sat.add(const Duration(days: 7));
       if (sat.isBefore(today)) sat = today;
       add(_Hit(_Kind.date, m.start, m.end)..date = sat);
     }
-    for (final m in RegExp(r'\b(?:end of (?:the )?(week)|end of (?:the )?(month)|eow|eom|fine (?:della )?settimana lavorativa|a fine (mese)|fine (?:del )?(mese))\b').allMatches(t)) {
-      final isMonth = m.group(2) != null || m.group(3) != null || m.group(4) != null || (m.group(0) ?? '').contains('eom');
+    for (final m in RegExp(
+      r'\b(?:end of (?:the )?(week)|end of (?:the )?(month)|eow|eom|fine (?:della )?settimana lavorativa|a fine (mese)|fine (?:del )?(mese))\b',
+    ).allMatches(t)) {
+      final isMonth =
+          m.group(2) != null || m.group(3) != null || m.group(4) != null || (m.group(0) ?? '').contains('eom');
       final d = isMonth ? DateTime(today.year, today.month + 1, 0) : monday.add(const Duration(days: 4));
-      add(_Hit(_Kind.date, m.start, m.end)
-        ..date = d.isBefore(today) ? today : d
-        ..hour = 17
-        ..minute = 0
-        ..hasExplicitTime = true);
+      add(
+        _Hit(_Kind.date, m.start, m.end)
+          ..date = d.isBefore(today) ? today : d
+          ..hour = 17
+          ..minute = 0
+          ..hasExplicitTime = true,
+      );
     }
 
     // --- relative days ------------------------------------------------------------------------
@@ -186,24 +266,36 @@ class DateTimeParser {
       final offset = (w == 'day after tomorrow' || w == 'dopodomani')
           ? 2
           : (w == 'tomorrow' || w == 'tmrw' || w == 'tmr' || w == 'domani')
-              ? 1
-              : 0;
+          ? 1
+          : 0;
       add(_Hit(_Kind.date, m.start, m.end)..date = today.add(Duration(days: offset)));
     }
 
     // --- weekdays -----------------------------------------------------------------------------
-    for (final m in RegExp(r'\b(?:(this|next|coming|upcoming|on|questo|prossimo)\s+)?(' '$_wdFull' r')(?:\s+(prossimo|prossima|che viene))?\b').allMatches(t)) {
+    for (final m in RegExp(
+      r'\b(?:(this|next|coming|upcoming|on|questo|prossimo)\s+)?('
+      '$_wdFull'
+      r')(?:\s+(prossimo|prossima|che viene))?\b',
+    ).allMatches(t)) {
       final mod = m.group(1) ?? (m.group(3) != null ? 'next' : null);
-      add(_Hit(_Kind.date, m.start, m.end)
-        ..weekday = _weekdays[m.group(2)!]
-        ..weekdayMod = (mod == 'next' || mod == 'prossimo' || mod == 'coming' || mod == 'upcoming')
-            ? (mod == 'coming' || mod == 'upcoming' ? 'this' : 'next')
-            : (mod == 'this' || mod == 'questo' ? 'this' : null));
+      add(
+        _Hit(_Kind.date, m.start, m.end)
+          ..weekday = _weekdays[m.group(2)!]
+          ..weekdayMod = (mod == 'next' || mod == 'prossimo' || mod == 'coming' || mod == 'upcoming')
+              ? (mod == 'coming' || mod == 'upcoming' ? 'this' : 'next')
+              : (mod == 'this' || mod == 'questo' ? 'this' : null),
+      );
     }
-    for (final m in RegExp(r'\b(this|next|on|by|before)\s+(' '$_wdAbbr' r')\b').allMatches(t)) {
-      add(_Hit(_Kind.date, m.start, m.end)
-        ..weekday = _weekdays[m.group(2)!]
-        ..weekdayMod = m.group(1) == 'next' ? 'next' : (m.group(1) == 'this' ? 'this' : null));
+    for (final m in RegExp(
+      r'\b(this|next|on|by|before)\s+('
+      '$_wdAbbr'
+      r')\b',
+    ).allMatches(t)) {
+      add(
+        _Hit(_Kind.date, m.start, m.end)
+          ..weekday = _weekdays[m.group(2)!]
+          ..weekdayMod = m.group(1) == 'next' ? 'next' : (m.group(1) == 'this' ? 'this' : null),
+      );
     }
 
     // --- explicit dates -----------------------------------------------------------------------
@@ -211,11 +303,19 @@ class DateTimeParser {
       final d = _safeDate(int.parse(m.group(1)!), int.parse(m.group(2)!), int.parse(m.group(3)!));
       if (d != null) add(_Hit(_Kind.date, m.start, m.end)..date = d);
     }
-    for (final m in RegExp(r'\b(\d{1,2})\s*(?:st|nd|rd|th|o|°)?\s*(?:of\s+|di\s+)?(' '$_monthAlt' r')\b\.?(?:,?\s+(\d{4}))?').allMatches(t)) {
+    for (final m in RegExp(
+      r'\b(\d{1,2})\s*(?:st|nd|rd|th|o|°)?\s*(?:of\s+|di\s+)?('
+      '$_monthAlt'
+      r')\b\.?(?:,?\s+(\d{4}))?',
+    ).allMatches(t)) {
       final d = _resolveDayMonth(int.parse(m.group(1)!), _months[m.group(2)!]!, m.group(3), today);
       if (d != null) add(_Hit(_Kind.date, m.start, m.end)..date = d);
     }
-    for (final m in RegExp(r'\b(' '$_monthAlt' r')\.?\s+(\d{1,2})(?:st|nd|rd|th)?\b(?!\s*[:.]\d)(?:,?\s+(\d{4}))?').allMatches(t)) {
+    for (final m in RegExp(
+      r'\b('
+      '$_monthAlt'
+      r')\.?\s+(\d{1,2})(?:st|nd|rd|th)?\b(?!\s*[:.]\d)(?:,?\s+(\d{4}))?',
+    ).allMatches(t)) {
       final d = _resolveDayMonth(int.parse(m.group(2)!), _months[m.group(1)!]!, m.group(3), today);
       if (d != null) add(_Hit(_Kind.date, m.start, m.end)..date = d);
     }
@@ -257,7 +357,10 @@ class DateTimeParser {
     }
     for (final m in RegExp(r'(?<![\d:.])(\d{1,2})[.h](\d{2})\s*(am|pm|a\.m\.|p\.m\.)?(?![\d:.])').allMatches(t)) {
       final pre = t.substring((m.start - 8).clamp(0, t.length), m.start);
-      final hasCue = RegExp(r'(?:at|alle|all|ore|@|around|verso)\s*$').hasMatch(pre) || m.group(3) != null || t[m.start + m.group(1)!.length] == 'h';
+      final hasCue =
+          RegExp(r'(?:at|alle|all|ore|@|around|verso)\s*$').hasMatch(pre) ||
+          m.group(3) != null ||
+          t[m.start + m.group(1)!.length] == 'h';
       if (!hasCue) continue;
       final h = int.parse(m.group(1)!), mi = int.parse(m.group(2)!);
       if (h > 23 || mi > 59) continue;
@@ -268,7 +371,9 @@ class DateTimeParser {
       if (h < 1 || h > 12) continue;
       add(_timeHit(m.start, m.end, h, 0, m.group(2)));
     }
-    for (final m in RegExp(r"(?:\bat\b|@|\balle\b|\ball'|\bore\b|\bverso le\b|\baround\b)\s*(\d{1,2})\b(?![:.]\d)(?!\s*(?:st|nd|rd|th|%|/|-|euro|eur|usd|dollars|\$|€|people|persone|items|km|kg))").allMatches(t)) {
+    for (final m in RegExp(
+      r"(?:\bat\b|@|\balle\b|\ball'|\bore\b|\bverso le\b|\baround\b)\s*(\d{1,2})\b(?![:.]\d)(?!\s*(?:st|nd|rd|th|%|/|-|euro|eur|usd|dollars|\$|€|people|persone|items|km|kg))",
+    ).allMatches(t)) {
       final h = int.parse(m.group(1)!);
       if (h > 23) continue;
       final hit = _timeHit(m.start, m.end, h, 0, null);
@@ -276,19 +381,27 @@ class DateTimeParser {
     }
     for (final m in RegExp(r'\b(noon|midday|mezzogiorno|midnight|mezzanotte)\b').allMatches(t)) {
       final isNoon = m.group(1) == 'noon' || m.group(1) == 'midday' || m.group(1) == 'mezzogiorno';
-      add(_Hit(_Kind.time, m.start, m.end)
-        ..hour = isNoon ? 12 : 0
-        ..minute = 0
-        ..hasExplicitTime = true);
+      add(
+        _Hit(_Kind.time, m.start, m.end)
+          ..hour = isNoon ? 12 : 0
+          ..minute = 0
+          ..hasExplicitTime = true,
+      );
     }
 
     // --- day parts ----------------------------------------------------------------------------
-    for (final m in RegExp(r'\b(tonight|stasera|stanotte|this (morning|afternoon|evening)|in the (morning|afternoon|evening)|(?:di )?(mattina|mattino|pomeriggio|sera|notte)|stamattina|stamani|domattina|morning|afternoon|evening|eod|end of (?:the )?day|cob|end of business)\b').allMatches(t)) {
+    for (final m in RegExp(
+      r'\b(tonight|stasera|stanotte|this (morning|afternoon|evening)|in the (morning|afternoon|evening)|(?:di )?(mattina|mattino|pomeriggio|sera|notte)|stamattina|stamani|domattina|morning|afternoon|evening|eod|end of (?:the )?day|cob|end of business)\b',
+    ).allMatches(t)) {
       final w = m.group(0)!;
       _Part part;
       if (w == 'tonight' || w == 'stasera') {
         part = _Part.tonight;
-      } else if (w.contains('morning') || w.contains('mattina') || w.contains('mattino') || w == 'stamani' || w == 'domattina') {
+      } else if (w.contains('morning') ||
+          w.contains('mattina') ||
+          w.contains('mattino') ||
+          w == 'stamani' ||
+          w == 'domattina') {
         part = _Part.morning;
       } else if (w.contains('afternoon') || w.contains('pomeriggio')) {
         part = _Part.afternoon;
@@ -327,12 +440,77 @@ class DateTimeParser {
 
   /// Words that may follow a date without making it a noun modifier.
   static const Set<String> _nonNounFollowers = {
-    'at', 'alle', 'ore', 'and', 'or', 'e', 'ed', 'o', 'then', 'poi', 'in', 'on', 'by', 'before',
-    'for', 'from', 'to', 'until', 'morning', 'afternoon', 'evening', 'night', 'noon', 'mattina',
-    'pomeriggio', 'sera', 'notte', 'but', 'ma', 'so', 'because', 'after', 'with', 'con', 'about',
-    'per', 'is', 'around', 'circa', 'verso', 'if', 'when', 'while', 'since', 'through', 'dopo',
-    'prima', 'entro', 'please', 'thanks', 'grazie', 'too', 'also', 'as', 'the', 'a', 'an', 'il',
-    'lo', 'la', 'i', 'you', 'we', 'me', 'it', 'do', 'don', 'will', 'should', 'must', 'can',
+    'at',
+    'alle',
+    'ore',
+    'and',
+    'or',
+    'e',
+    'ed',
+    'o',
+    'then',
+    'poi',
+    'in',
+    'on',
+    'by',
+    'before',
+    'for',
+    'from',
+    'to',
+    'until',
+    'morning',
+    'afternoon',
+    'evening',
+    'night',
+    'noon',
+    'mattina',
+    'pomeriggio',
+    'sera',
+    'notte',
+    'but',
+    'ma',
+    'so',
+    'because',
+    'after',
+    'with',
+    'con',
+    'about',
+    'per',
+    'is',
+    'around',
+    'circa',
+    'verso',
+    'if',
+    'when',
+    'while',
+    'since',
+    'through',
+    'dopo',
+    'prima',
+    'entro',
+    'please',
+    'thanks',
+    'grazie',
+    'too',
+    'also',
+    'as',
+    'the',
+    'a',
+    'an',
+    'il',
+    'lo',
+    'la',
+    'i',
+    'you',
+    'we',
+    'me',
+    'it',
+    'do',
+    'don',
+    'will',
+    'should',
+    'must',
+    'can',
   };
 
   static const Map<_Part, int> _partHour = {
@@ -374,13 +552,15 @@ class DateTimeParser {
       var start = group.first.start;
       final end = group.last.end;
       final after = t.substring(end);
-      final atBoundary = after.trim().isEmpty ||
-          RegExp(r'^\s*(?:[,.;:!?)]|(?:and|then|but|e|ed|poi|ma|or|o)\b)').hasMatch(after);
+      final atBoundary =
+          after.trim().isEmpty || RegExp(r'^\s*(?:[,.;:!?)]|(?:and|then|but|e|ed|poi|ma|or|o)\b)').hasMatch(after);
       // Absorb leading prepositions and deadline markers so they don't pollute task titles.
       // Deadline words always go; plain prepositions only when the expression ends the phrase
       // ("... for Monday" -> drop "for"; "for Monday client presentation" -> keep it).
       var deadline = false;
-      final prefix = RegExp(r'(?:^|\s)(by|before|until|till|due|entro|prima|fino|oltre|non|on|at|for|the|il|lo|la|alle|all|per|di|a|ore|@|in|from)\s*$');
+      final prefix = RegExp(
+        r'(?:^|\s)(by|before|until|till|due|entro|prima|fino|oltre|non|on|at|for|the|il|lo|la|alle|all|per|di|a|ore|@|in|from)\s*$',
+      );
       const deadlineWords = {'by', 'before', 'until', 'till', 'due', 'entro', 'prima', 'fino', 'oltre'};
       String? immediatePrefix;
       for (var k = 0; k < 3; k++) {
@@ -398,20 +578,43 @@ class DateTimeParser {
       // preposition in front, modifies that noun.
       final hasClock = group.any((h) => h.kind == _Kind.time || h.kind == _Kind.daypart || h.kind == _Kind.instant);
       final nextWord = RegExp(r"^\s+([a-z][a-z']*)").firstMatch(after)?.group(1);
-      const datePrefixes = {'on', 'by', 'before', 'until', 'till', 'for', 'due', 'entro', 'per', 'il', 'prima', 'fino', 'at', 'from', 'since', 'after', 'dopo', 'dal', 'the'};
-      final attributive = !hasClock &&
+      const datePrefixes = {
+        'on',
+        'by',
+        'before',
+        'until',
+        'till',
+        'for',
+        'due',
+        'entro',
+        'per',
+        'il',
+        'prima',
+        'fino',
+        'at',
+        'from',
+        'since',
+        'after',
+        'dopo',
+        'dal',
+        'the',
+      };
+      final attributive =
+          !hasClock &&
           nextWord != null &&
           !_nonNounFollowers.contains(nextWord) &&
           !(immediatePrefix != null && datePrefixes.contains(immediatePrefix) && immediatePrefix != 'the');
-      out.add(TemporalExpression(
-        start: start,
-        end: end,
-        text: text.substring(start, end).trim(),
-        value: resolved.$1,
-        hasTime: resolved.$2,
-        isDeadline: deadline,
-        attributive: attributive,
-      ));
+      out.add(
+        TemporalExpression(
+          start: start,
+          end: end,
+          text: text.substring(start, end).trim(),
+          value: resolved.$1,
+          hasTime: resolved.$2,
+          isDeadline: deadline,
+          attributive: attributive,
+        ),
+      );
     }
     return out;
   }

@@ -33,7 +33,10 @@ class InsightChips extends StatelessWidget {
 
     if (a.categoryId != null) {
       final s = categoryStyle(a.categoryId);
-      chips.add(('cat:${a.categoryId}', PsChip(icon: s.icon, label: categoryLabel(ontology, a.categoryId), color: s.color)));
+      chips.add((
+        'cat:${a.categoryId}',
+        PsChip(icon: s.icon, label: categoryLabel(ontology, a.categoryId), color: s.color),
+      ));
     }
     for (final t in a.actions.take(2)) {
       final due = t.due;
@@ -41,7 +44,9 @@ class InsightChips extends StatelessWidget {
         'task:${t.title}:${due?.millisecondsSinceEpoch}',
         PsChip(
           icon: due != null ? CupertinoIcons.bell_fill : CupertinoIcons.checkmark_circle,
-          label: due != null ? '${t.title} · ${TimeFormat.dueLabel(due, now, hasTime: t.hasDueTime)}' : 'Task: ${t.title}',
+          label: due != null
+              ? '${t.title} · ${TimeFormat.dueLabel(due, now, hasTime: t.hasDueTime)}'
+              : 'Task: ${t.title}',
           color: ps.accent,
         ),
       ));
@@ -49,7 +54,14 @@ class InsightChips extends StatelessWidget {
     final checklist = a.checklist;
     final suggestion = a.checklistSuggestion;
     if (checklist != null) {
-      chips.add(('check', PsChip(icon: CupertinoIcons.list_bullet, label: 'Checklist · ${checklist.items.length} items', color: ps.success)));
+      chips.add((
+        'check',
+        PsChip(
+          icon: CupertinoIcons.list_bullet,
+          label: 'Checklist · ${checklist.items.length} items',
+          color: ps.success,
+        ),
+      ));
     } else if (suggestion != null) {
       chips.add((
         'suggest:$checklistAccepted',
@@ -66,14 +78,21 @@ class InsightChips extends StatelessWidget {
       final high = a.priority.level.value >= 3;
       chips.add((
         'prio:${a.priority.level.name}',
-        PsChip(icon: CupertinoIcons.flag_fill, label: high ? 'High priority' : 'Medium priority', color: high ? ps.danger : ps.warning),
+        PsChip(
+          icon: CupertinoIcons.flag_fill,
+          label: high ? 'High priority' : 'Medium priority',
+          color: high ? ps.danger : ps.warning,
+        ),
       ));
     }
     if (a.entities.urls.isNotEmpty) {
       chips.add(('link', PsChip(icon: CupertinoIcons.link, label: a.entities.urls.first.host, color: ps.accent)));
     }
     for (final t in a.tags.take(3)) {
-      chips.add(('tag:${t.name}', PsChip(label: '#${t.name}', color: t.source == TagSource.user ? ps.accent : ps.secondaryLabel)));
+      chips.add((
+        'tag:${t.name}',
+        PsChip(label: '#${t.name}', color: t.source == TagSource.user ? ps.accent : ps.secondaryLabel),
+      ));
     }
 
     return AnimatedSize(
@@ -96,10 +115,13 @@ class _PopIn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => TweenAnimationBuilder<double>(
-        tween: Tween(begin: 0.82, end: 1),
-        duration: PsMotion.base,
-        curve: PsMotion.spring,
-        builder: (context, t, child) => Opacity(opacity: ((t - 0.82) / 0.18).clamp(0, 1), child: Transform.scale(scale: t, child: child)),
-        child: child,
-      );
+    tween: Tween(begin: 0.82, end: 1),
+    duration: PsMotion.base,
+    curve: PsMotion.spring,
+    builder: (context, t, child) => Opacity(
+      opacity: ((t - 0.82) / 0.18).clamp(0, 1),
+      child: Transform.scale(scale: t, child: child),
+    ),
+    child: child,
+  );
 }

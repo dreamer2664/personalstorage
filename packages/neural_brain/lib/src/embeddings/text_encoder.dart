@@ -29,6 +29,5 @@ abstract class SyncTextEncoder implements TextEncoder {
   Future<Float32List> encode(String text) async => encodeSync(text);
 
   @override
-  Future<List<Float32List>> encodeBatch(List<String> texts) async =>
-      [for (final t in texts) encodeSync(t)];
+  Future<List<Float32List>> encodeBatch(List<String> texts) async => [for (final t in texts) encodeSync(t)];
 }

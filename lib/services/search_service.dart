@@ -36,7 +36,14 @@ class SearchService {
     // Notes found by FTS but not (yet) in the index.
     for (final e in lexical.entries) {
       if (!byId.containsKey(e.key) && e.value >= 0.3 && !brain.index.contains(e.key)) {
-        byId[e.key] = SearchHit(id: e.key, score: 0.4 + 0.3 * e.value, semantic: 0, concept: 0, lexical: e.value, reasons: const ['Keyword match']);
+        byId[e.key] = SearchHit(
+          id: e.key,
+          score: 0.4 + 0.3 * e.value,
+          semantic: 0,
+          concept: 0,
+          lexical: e.value,
+          reasons: const ['Keyword match'],
+        );
       }
     }
     if (byId.isEmpty) return const [];
@@ -52,7 +59,9 @@ class SearchService {
   Future<List<SearchResult>> related(String noteId, {int limit = 6, double minRelatedness = 0.28}) async {
     final neighbors = brain.index.neighbors(noteId, k: limit, minRelatedness: minRelatedness);
     if (neighbors.isEmpty) return const [];
-    final summaries = {for (final s in await repo.loadSummaries(ids: {for (final n in neighbors) n.id})) s.id: s};
+    final summaries = {
+      for (final s in await repo.loadSummaries(ids: {for (final n in neighbors) n.id})) s.id: s,
+    };
     return [
       for (final n in neighbors)
         if (summaries[n.id] != null) SearchResult(summaries[n.id]!, n.score, n.reasons),

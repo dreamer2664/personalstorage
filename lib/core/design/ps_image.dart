@@ -19,7 +19,10 @@ class PsImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ps = context.ps;
-    Widget broken() => ColoredBox(color: ps.separator, child: Center(child: Icon(CupertinoIcons.photo, color: ps.tertiaryLabel)));
+    Widget broken() => ColoredBox(
+      color: ps.separator,
+      child: Center(child: Icon(CupertinoIcons.photo, color: ps.tertiaryLabel)),
+    );
     final isUrl = kIsWeb || path.startsWith('http') || path.startsWith('blob:');
     final image = isUrl
         ? Image.network(path, fit: fit, cacheWidth: cacheWidth, errorBuilder: (_, _, _) => broken())

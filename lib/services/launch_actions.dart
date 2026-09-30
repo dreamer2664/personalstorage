@@ -48,19 +48,22 @@ class LaunchActions {
   /// Call once at start-up.
   Future<void> attach() async {
     if (kIsWeb) return;
-    // 1. Static/dynamic app-icon shortcuts.
-    try {
-      final qa = const QuickActions();
-      await qa.initialize((type) {
-        if (type == 'capture') _ref.read(launchRequestProvider.notifier).fire(LaunchActionType.capture);
-        if (type == 'voice') _ref.read(launchRequestProvider.notifier).fire(LaunchActionType.voice);
-      });
-      await qa.setShortcutItems(const [
-        ShortcutItem(type: 'capture', localizedTitle: 'New note'),
-        ShortcutItem(type: 'voice', localizedTitle: 'Voice note'),
-      ]);
-    } on Object catch (e) {
-      debugPrint('Quick actions unavailable: $e');
+    // 1. iOS home-screen quick actions. (Android ships *static* shortcuts in res/xml/shortcuts.xml,
+    //    which work before the app has ever run - adding dynamic ones would duplicate them.)
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      try {
+        const qa = QuickActions();
+        await qa.initialize((type) {
+          if (type == 'capture') _ref.read(launchRequestProvider.notifier).fire(LaunchActionType.capture);
+          if (type == 'voice') _ref.read(launchRequestProvider.notifier).fire(LaunchActionType.voice);
+        });
+        await qa.setShortcutItems(const [
+          ShortcutItem(type: 'capture', localizedTitle: 'New note'),
+          ShortcutItem(type: 'voice', localizedTitle: 'Voice note'),
+        ]);
+      } on Object catch (e) {
+        debugPrint('Quick actions unavailable: $e');
+      }
     }
     // 2. Android share sheet (text / images) via a tiny native channel.
     _channel.setMethodCallHandler((call) async {

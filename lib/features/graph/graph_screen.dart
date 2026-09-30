@@ -169,7 +169,9 @@ class _GraphScreenState extends ConsumerState<GraphScreen> with SingleTickerProv
                 },
                 onDoubleTapDown: (d) => _c.zoomAt(d.localPosition, 1.9, animate: true),
                 onDoubleTap: () {},
-                child: RepaintBoundary(child: CustomPaint(painter: GraphPainter(_c, ps), size: Size.infinite)),
+                child: RepaintBoundary(
+                  child: CustomPaint(painter: GraphPainter(_c, ps), size: Size.infinite),
+                ),
               ),
             ),
           if (empty)
@@ -196,7 +198,14 @@ class _GraphScreenState extends ConsumerState<GraphScreen> with SingleTickerProv
               children: [
                 _TopPill(graph: g, selectedCluster: _cluster, onClear: () => setState(() => _cluster = null)),
                 const Spacer(),
-                if (_cluster != null && g != null) _ClusterSheet(graph: g, cluster: g.clusters[_cluster!], onClose: () => setState(() => _cluster = null), onOpen: _openNote, onFocus: (i) => _c.selectById(g.nodes[i].id)),
+                if (_cluster != null && g != null)
+                  _ClusterSheet(
+                    graph: g,
+                    cluster: g.clusters[_cluster!],
+                    onClose: () => setState(() => _cluster = null),
+                    onOpen: _openNote,
+                    onFocus: (i) => _c.selectById(g.nodes[i].id),
+                  ),
                 if (_c.selected >= 0 && g != null && _cluster == null)
                   _SelectionCard(
                     node: g.nodes[_c.selected],
@@ -204,7 +213,9 @@ class _GraphScreenState extends ConsumerState<GraphScreen> with SingleTickerProv
                     neighborCount: g.adjacency[_c.selected].length,
                     onOpen: () => _openNote(g.nodes[_c.selected].id),
                     onTagShow: () {
-                      ref.read(libraryFilterProvider.notifier).set(LibraryFilter(tag: g.nodes[_c.selected].label.substring(1)));
+                      ref
+                          .read(libraryFilterProvider.notifier)
+                          .set(LibraryFilter(tag: g.nodes[_c.selected].label.substring(1)));
                       ref.read(selectedTabProvider.notifier).select(1);
                     },
                     onClose: _c.clearSelection,
@@ -216,7 +227,9 @@ class _GraphScreenState extends ConsumerState<GraphScreen> with SingleTickerProv
                     bottomInset: widget.bottomInset,
                     onFit: () => _c.fit(),
                     onThreshold: (v) => ref.read(settingsProvider.notifier).update(settings.copyWith(edgeThreshold: v)),
-                    onTagHubs: () => ref.read(settingsProvider.notifier).update(settings.copyWith(showTagHubs: !settings.showTagHubs)),
+                    onTagHubs: () => ref
+                        .read(settingsProvider.notifier)
+                        .update(settings.copyWith(showTagHubs: !settings.showTagHubs)),
                   )
                 else
                   SizedBox(height: widget.bottomInset),
@@ -262,7 +275,9 @@ class _TopPill extends StatelessWidget {
                 children: [
                   Text('Knowledge graph', style: PsText.headline(ps.label)),
                   Text(
-                    g == null ? 'Loading…' : '$notes notes · ${g.edges.length} connections · ${g.clusters.length} clusters',
+                    g == null
+                        ? 'Loading…'
+                        : '$notes notes · ${g.edges.length} connections · ${g.clusters.length} clusters',
                     style: PsText.caption(ps.secondaryLabel),
                   ),
                 ],
@@ -314,7 +329,13 @@ class _Controls extends StatelessWidget {
                 onChanged: (v) => onThreshold(double.parse(v.toStringAsFixed(2))),
               ),
             ),
-            GlassIconButton(icon: CupertinoIcons.number, size: 38, semanticLabel: 'Toggle tag hubs', color: tagHubs ? ps.accent : ps.secondaryLabel, onPressed: onTagHubs),
+            GlassIconButton(
+              icon: CupertinoIcons.number,
+              size: 38,
+              semanticLabel: 'Toggle tag hubs',
+              color: tagHubs ? ps.accent : ps.secondaryLabel,
+              onPressed: onTagHubs,
+            ),
             const SizedBox(width: 6),
             GlassIconButton(icon: CupertinoIcons.scope, size: 38, semanticLabel: 'Fit to screen', onPressed: onFit),
           ],
@@ -369,8 +390,21 @@ class _SelectionCard extends StatelessWidget {
                     child: Icon(isTag ? CupertinoIcons.number : cat.icon, size: 17, color: const Color(0xFFFFFFFF)),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(child: Text(node.label, maxLines: 2, overflow: TextOverflow.ellipsis, style: PsText.headline(ps.label))),
-                  GestureDetector(onTap: onClose, child: Padding(padding: const EdgeInsets.all(6), child: Icon(CupertinoIcons.xmark_circle_fill, color: ps.tertiaryLabel))),
+                  Expanded(
+                    child: Text(
+                      node.label,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: PsText.headline(ps.label),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: onClose,
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(CupertinoIcons.xmark_circle_fill, color: ps.tertiaryLabel),
+                    ),
+                  ),
                 ],
               ),
               if (s != null && s.snippet.isNotEmpty) ...[
@@ -385,12 +419,22 @@ class _SelectionCard extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 6,
                       children: [
-                        PsChip(dense: true, icon: CupertinoIcons.link, label: '$neighborCount ${neighborCount == 1 ? 'link' : 'links'}', color: ps.secondaryLabel),
-                        if (s != null) for (final t in s.tags.take(2)) PsChip(dense: true, label: '#${t.name}', color: cat.color),
+                        PsChip(
+                          dense: true,
+                          icon: CupertinoIcons.link,
+                          label: '$neighborCount ${neighborCount == 1 ? 'link' : 'links'}',
+                          color: ps.secondaryLabel,
+                        ),
+                        if (s != null)
+                          for (final t in s.tags.take(2)) PsChip(dense: true, label: '#${t.name}', color: cat.color),
                       ],
                     ),
                   ),
-                  PsButton(label: isTag ? 'Show notes' : 'Open', icon: isTag ? CupertinoIcons.list_bullet : CupertinoIcons.arrow_right, onPressed: isTag ? onTagShow : onOpen),
+                  PsButton(
+                    label: isTag ? 'Show notes' : 'Open',
+                    icon: isTag ? CupertinoIcons.list_bullet : CupertinoIcons.arrow_right,
+                    onPressed: isTag ? onTagShow : onOpen,
+                  ),
                 ],
               ),
             ],
@@ -402,7 +446,13 @@ class _SelectionCard extends StatelessWidget {
 }
 
 class _ClusterSheet extends ConsumerWidget {
-  const _ClusterSheet({required this.graph, required this.cluster, required this.onClose, required this.onOpen, required this.onFocus});
+  const _ClusterSheet({
+    required this.graph,
+    required this.cluster,
+    required this.onClose,
+    required this.onOpen,
+    required this.onFocus,
+  });
 
   final KnowledgeGraph graph;
   final GraphCluster cluster;
@@ -433,7 +483,13 @@ class _ClusterSheet extends ConsumerWidget {
                   Icon(cat.icon, color: cat.color, size: 20),
                   const SizedBox(width: 10),
                   Expanded(child: Text('${cluster.label} · ${members.length} ideas', style: PsText.headline(ps.label))),
-                  GestureDetector(onTap: onClose, child: Padding(padding: const EdgeInsets.all(6), child: Icon(CupertinoIcons.xmark_circle_fill, color: ps.tertiaryLabel))),
+                  GestureDetector(
+                    onTap: onClose,
+                    child: Padding(
+                      padding: const EdgeInsets.all(6),
+                      child: Icon(CupertinoIcons.xmark_circle_fill, color: ps.tertiaryLabel),
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 6),
@@ -451,12 +507,29 @@ class _ClusterSheet extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(vertical: 9),
                           child: Row(
                             children: [
-                              Container(width: 8, height: 8, decoration: BoxDecoration(shape: BoxShape.circle, color: categoryStyle(graph.nodes[i].categoryId).color)),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: categoryStyle(graph.nodes[i].categoryId).color,
+                                ),
+                              ),
                               const SizedBox(width: 12),
-                              Expanded(child: Text(graph.nodes[i].label, maxLines: 1, overflow: TextOverflow.ellipsis, style: PsText.body(ps.label))),
+                              Expanded(
+                                child: Text(
+                                  graph.nodes[i].label,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: PsText.body(ps.label),
+                                ),
+                              ),
                               GestureDetector(
                                 onTap: () => onFocus(i),
-                                child: Padding(padding: const EdgeInsets.symmetric(horizontal: 8), child: Icon(CupertinoIcons.scope, size: 16, color: ps.secondaryLabel)),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                                  child: Icon(CupertinoIcons.scope, size: 16, color: ps.secondaryLabel),
+                                ),
                               ),
                               Icon(CupertinoIcons.chevron_right, size: 14, color: ps.tertiaryLabel),
                             ],

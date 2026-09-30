@@ -71,7 +71,10 @@ class GraphController extends ChangeNotifier {
     if (!keepPositions || old == null) {
       next.step(iterations: 70); // pre-warm: the first visible frame is already organised
     }
-    if (selected >= g.nodes.length || (oldGraph != null && selected >= 0 && oldGraph.nodes[selected].id != (selected < g.nodes.length ? g.nodes[selected].id : ''))) {
+    if (selected >= g.nodes.length ||
+        (oldGraph != null &&
+            selected >= 0 &&
+            oldGraph.nodes[selected].id != (selected < g.nodes.length ? g.nodes[selected].id : ''))) {
       clearSelection(notify: false);
     }
     if (old == null) fit(animate: false);

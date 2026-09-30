@@ -36,13 +36,17 @@ class _AppShellState extends ConsumerState<AppShell> {
       case LaunchActionType.capture:
         tabs.select(0);
         Navigator.of(context).popUntil((route) => route.isFirst);
-        WidgetsBinding.instance.addPostFrameCallback((_) => _capture.currentState?.prefill(text: r.text, images: r.imagePaths));
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _capture.currentState?.prefill(text: r.text, images: r.imagePaths),
+        );
       case LaunchActionType.voice:
         tabs.select(0);
         Navigator.of(context).popUntil((route) => route.isFirst);
         WidgetsBinding.instance.addPostFrameCallback((_) => _capture.currentState?.startVoice());
       case LaunchActionType.openNote:
-        if (r.noteId != null) Navigator.of(context).push(CupertinoPageRoute<void>(builder: (_) => NoteDetailScreen(noteId: r.noteId!)));
+        if (r.noteId != null) {
+          Navigator.of(context).push(CupertinoPageRoute<void>(builder: (_) => NoteDetailScreen(noteId: r.noteId!)));
+        }
     }
     ref.read(launchRequestProvider.notifier).consume();
   }
@@ -143,7 +147,12 @@ class GlassTabBar extends StatelessWidget {
                   top: 0,
                   bottom: 0,
                   width: w,
-                  child: Container(decoration: ShapeDecoration(shape: squircle(PsRadius.bar - 6), color: ps.accent.withValues(alpha: ps.isDark ? 0.28 : 0.14))),
+                  child: Container(
+                    decoration: ShapeDecoration(
+                      shape: squircle(PsRadius.bar - 6),
+                      color: ps.accent.withValues(alpha: ps.isDark ? 0.28 : 0.14),
+                    ),
+                  ),
                 ),
                 Row(
                   children: [
@@ -166,10 +175,18 @@ class GlassTabBar extends StatelessWidget {
                                       duration: PsMotion.base,
                                       curve: PsMotion.spring,
                                       scale: i == index ? 1.12 : 1,
-                                      child: Icon(_items[i].$1, size: 24, color: i == index ? ps.accent : ps.secondaryLabel),
+                                      child: Icon(
+                                        _items[i].$1,
+                                        size: 24,
+                                        color: i == index ? ps.accent : ps.secondaryLabel,
+                                      ),
                                     ),
                                     const SizedBox(height: 2),
-                                    Text(_items[i].$2, style: PsText.caption(i == index ? ps.accent : ps.secondaryLabel).copyWith(fontSize: 10.5)),
+                                    Text(
+                                      _items[i].$2,
+                                      style: PsText.caption(i == index ? ps.accent : ps.secondaryLabel)
+                                          .copyWith(fontSize: 10.5),
+                                    ),
                                   ],
                                 ),
                                 if ((badge[i] ?? 0) > 0)
@@ -178,8 +195,15 @@ class GlassTabBar extends StatelessWidget {
                                     right: w / 2 - 26,
                                     child: Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                      decoration: BoxDecoration(color: ps.danger, borderRadius: BorderRadius.circular(9)),
-                                      child: Text('${badge[i]}', style: PsText.caption(const Color(0xFFFFFFFF)).copyWith(fontSize: 10, fontWeight: FontWeight.w700)),
+                                      decoration: BoxDecoration(
+                                        color: ps.danger,
+                                        borderRadius: BorderRadius.circular(9),
+                                      ),
+                                      child: Text(
+                                        '${badge[i]}',
+                                        style: PsText.caption(const Color(0xFFFFFFFF))
+                                            .copyWith(fontSize: 10, fontWeight: FontWeight.w700),
+                                      ),
                                     ),
                                   ),
                               ],

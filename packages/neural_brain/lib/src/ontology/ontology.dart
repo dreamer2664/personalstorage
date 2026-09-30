@@ -120,16 +120,18 @@ class Ontology {
       final it = termSplit.length > 1 ? _terms(termSplit[1]) : List<OntologyTerm>.of(en);
       _addLabelTerm(en, parts[1]);
       _addLabelTerm(it, parts[2]);
-      concepts.add(Concept(
-        id: id,
-        index: concepts.length,
-        parents: parents,
-        labelEn: parts[1],
-        labelIt: parts[2],
-        termsEn: en,
-        termsIt: it,
-        prior: prior,
-      ));
+      concepts.add(
+        Concept(
+          id: id,
+          index: concepts.length,
+          parents: parents,
+          labelEn: parts[1],
+          labelIt: parts[2],
+          termsEn: en,
+          termsIt: it,
+          prior: prior,
+        ),
+      );
     }
     for (final c in concepts) {
       for (final p in c.parents) {
@@ -173,15 +175,21 @@ class Ontology {
   /// words are generic ("ideas", "product") and must be listed explicitly. An explicit term
   /// with the same spelling always wins (so `~book` stays weak in the "Books" concept).
   static void _addLabelTerm(List<OntologyTerm> terms, String label) {
-    final words = foldForMatching(label)
-        .split(RegExp(r'[^\p{L}\d]+', unicode: true))
-        .where((w) => w.isNotEmpty && !allStopwords.contains(w))
-        .toList();
+    final words = foldForMatching(
+      label,
+    ).split(RegExp(r'[^\p{L}\d]+', unicode: true)).where((w) => w.isNotEmpty && !allStopwords.contains(w)).toList();
     if (words.length != 1 || words.first.length < 3) return;
     final w = words.first;
     // Skip if an explicit term already covers this word or an inflected form of it
     // (book/books, appuntamento/appuntamenti): near-identical spelling counts as the same word.
-    if (terms.any((t) => !t.anchored && !t.phrase.contains(' ') && _commonPrefix(t.phrase, w) >= math.max(4, math.min(t.phrase.length, w.length) - 2))) return;
+    if (terms.any(
+      (t) =>
+          !t.anchored &&
+          !t.phrase.contains(' ') &&
+          _commonPrefix(t.phrase, w) >= math.max(4, math.min(t.phrase.length, w.length) - 2),
+    )) {
+      return;
+    }
     terms.add(OntologyTerm(w, 1.3));
   }
 }

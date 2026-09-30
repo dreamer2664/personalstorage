@@ -84,8 +84,8 @@ class CaptureScreenState extends ConsumerState<CaptureScreen> with WidgetsBindin
   }
 
   void _focusSoon() => WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _focus.requestFocus();
-      });
+    if (mounted) _focus.requestFocus();
+  });
 
   /// Called by the shell for deep links / shares.
   void focus() => _focusSoon();
@@ -151,20 +151,30 @@ class CaptureScreenState extends ConsumerState<CaptureScreen> with WidgetsBindin
       if (!mounted) return;
       _controller.text = draft.text;
       setState(() => _images = draft.imagePaths);
-      _flash(ToastData('Couldn\'t save', detail: '$e', icon: CupertinoIcons.exclamationmark_triangle_fill, color: context.ps.danger));
+      _flash(
+        ToastData(
+          'Couldn\'t save',
+          detail: '$e',
+          icon: CupertinoIcons.exclamationmark_triangle_fill,
+          color: context.ps.danger,
+        ),
+      );
     }
   }
 
   void _showSaved(AppServices services, CaptureResult r) {
     final a = r.analysis;
     final now = DateTime.now();
-    final due = a.actions.map((t) => t.due == null ? null : (t, t.due!)).whereType<(ExtractedAction, DateTime)>().firstOrNull;
+    final due = a.actions
+        .map((t) => t.due == null ? null : (t, t.due!))
+        .whereType<(ExtractedAction, DateTime)>()
+        .firstOrNull;
     final where = categoryLabel(services.ontology, a.categoryId);
     final detail = due != null
         ? 'Reminder · ${TimeFormat.dueLabel(due.$2, now, hasTime: due.$1.hasDueTime)}'
         : a.tags.isNotEmpty
-            ? a.tags.take(3).map((t) => '#${t.name}').join('  ')
-            : null;
+        ? a.tags.take(3).map((t) => '#${t.name}').join('  ')
+        : null;
     _flash(
       ToastData(
         'Saved to $where',
@@ -195,9 +205,9 @@ class CaptureScreenState extends ConsumerState<CaptureScreen> with WidgetsBindin
     }
     _voiceBase = _controller.text.trim().isEmpty ? '' : '${_controller.text.trimRight()} ';
     void put(String t) => _controller.value = TextEditingValue(
-          text: _voiceBase + t,
-          selection: TextSelection.collapsed(offset: (_voiceBase + t).length),
-        );
+      text: _voiceBase + t,
+      selection: TextSelection.collapsed(offset: (_voiceBase + t).length),
+    );
     final ok = await voice.start(
       onPartial: put,
       onDone: (t) {
@@ -212,7 +222,14 @@ class CaptureScreenState extends ConsumerState<CaptureScreen> with WidgetsBindin
       preferOnDevice: settings.preferOnDeviceSpeech,
     );
     if (!ok && mounted) {
-      _flash(ToastData('Voice input unavailable', detail: 'Check microphone and speech permissions', icon: CupertinoIcons.mic_slash_fill, color: context.ps.warning));
+      _flash(
+        ToastData(
+          'Voice input unavailable',
+          detail: 'Check microphone and speech permissions',
+          icon: CupertinoIcons.mic_slash_fill,
+          color: context.ps.warning,
+        ),
+      );
     }
   }
 
@@ -221,8 +238,14 @@ class CaptureScreenState extends ConsumerState<CaptureScreen> with WidgetsBindin
       context: context,
       builder: (ctx) => CupertinoActionSheet(
         actions: [
-          CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx, ImageSource.camera), child: const Text('Take Photo')),
-          CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx, ImageSource.gallery), child: const Text('Choose from Library')),
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.pop(ctx, ImageSource.camera),
+            child: const Text('Take Photo'),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.pop(ctx, ImageSource.gallery),
+            child: const Text('Choose from Library'),
+          ),
         ],
         cancelButton: CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
       ),
@@ -238,7 +261,9 @@ class CaptureScreenState extends ConsumerState<CaptureScreen> with WidgetsBindin
       setState(() => _images = [..._images, ...picked]);
       _onTextChanged();
     } on Object catch (e) {
-      if (mounted) _flash(ToastData('Couldn\'t open photos', detail: '$e', icon: CupertinoIcons.photo, color: context.ps.warning));
+      if (mounted) {
+        _flash(ToastData('Couldn\'t open photos', detail: '$e', icon: CupertinoIcons.photo, color: context.ps.warning));
+      }
     }
   }
 
@@ -299,7 +324,11 @@ class CaptureScreenState extends ConsumerState<CaptureScreen> with WidgetsBindin
                                   ],
                                 ),
                               ),
-                              if (_images.isNotEmpty) _ImageStrip(paths: _images, onRemove: (i) => setState(() => _images = [..._images]..removeAt(i))),
+                              if (_images.isNotEmpty)
+                                _ImageStrip(
+                                  paths: _images,
+                                  onRemove: (i) => setState(() => _images = [..._images]..removeAt(i)),
+                                ),
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
                                 child: Align(
@@ -325,16 +354,31 @@ class CaptureScreenState extends ConsumerState<CaptureScreen> with WidgetsBindin
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        ActionCircle(icon: CupertinoIcons.photo_on_rectangle, label: 'Attach photo', onTap: _pickImages),
+                        ActionCircle(
+                          icon: CupertinoIcons.photo_on_rectangle,
+                          label: 'Attach photo',
+                          onTap: _pickImages,
+                        ),
                         MicButton(listening: voice.isListening, level: voice.level, onTap: _toggleVoice),
-                        ActionCircle(icon: CupertinoIcons.arrow_up, label: 'Save note', filled: true, enabled: _canSave && services != null, onTap: _save),
+                        ActionCircle(
+                          icon: CupertinoIcons.arrow_up,
+                          label: 'Save note',
+                          filled: true,
+                          enabled: _canSave && services != null,
+                          onTap: _save,
+                        ),
                       ],
                     ),
                   ),
                   if (keyboard == 0) _RecentRow(bottomInset: 0, now: now),
                 ],
               ),
-              Positioned(top: 4, left: 24, right: 24, child: Center(child: GlassToast(data: _toast))),
+              Positioned(
+                top: 4,
+                left: 24,
+                right: 24,
+                child: Center(child: GlassToast(data: _toast)),
+              ),
             ],
           ),
         ),
@@ -350,9 +394,9 @@ class _Hint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Text(
-        'Try "remind me to call mom tomorrow at 5pm"',
-        style: PsText.footnote(ps.tertiaryLabel),
-      );
+    'Try "remind me to call mom tomorrow at 5pm"',
+    style: PsText.footnote(ps.tertiaryLabel),
+  );
 }
 
 class _ListeningBadge extends StatelessWidget {
@@ -414,7 +458,10 @@ class _ImageStrip extends StatelessWidget {
                 onTap: () => onRemove(i),
                 child: const DecoratedBox(
                   decoration: BoxDecoration(shape: BoxShape.circle, color: Color(0xCC000000)),
-                  child: Padding(padding: EdgeInsets.all(4), child: Icon(CupertinoIcons.xmark, size: 10, color: Color(0xFFFFFFFF))),
+                  child: Padding(
+                    padding: EdgeInsets.all(4),
+                    child: Icon(CupertinoIcons.xmark, size: 10, color: Color(0xFFFFFFFF)),
+                  ),
                 ),
               ),
             ),
@@ -457,7 +504,9 @@ class _RecentRow extends ConsumerWidget {
                     note: recent[i],
                     now: now,
                     compact: true,
-                    onTap: () => Navigator.of(context).push(CupertinoPageRoute<void>(builder: (_) => NoteDetailScreen(noteId: recent[i].id))),
+                    onTap: () =>
+                        Navigator.of(context)
+                            .push(CupertinoPageRoute<void>(builder: (_) => NoteDetailScreen(noteId: recent[i].id))),
                   ),
                 ),
               ),

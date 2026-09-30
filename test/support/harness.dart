@@ -66,7 +66,9 @@ class Harness {
   static Future<Harness> create({http.Client? httpClient, bool fetchPreviews = true}) async {
     final db = AppDatabase(NativeDatabase.memory());
     final repo = NoteRepository(db);
-    final brain = await BrainService.load(() async => Uint8List.fromList(File('assets/models/potion-base-8m.psm').readAsBytesSync()));
+    final brain = await BrainService.load(
+      () async => Uint8List.fromList(File('assets/models/potion-base-8m.psm').readAsBytesSync()),
+    );
     final reminders = FakeReminders();
     final media = FakeMedia();
     final enrichment = EnrichmentService(
@@ -77,7 +79,14 @@ class Harness {
       fetchPreviews: () => fetchPreviews,
       reminderHour: () => 9,
     );
-    final capture = CaptureService(repo: repo, brain: brain, enrichment: enrichment, reminders: reminders, media: media, reminderHour: () => 9);
+    final capture = CaptureService(
+      repo: repo,
+      brain: brain,
+      enrichment: enrichment,
+      reminders: reminders,
+      media: media,
+      reminderHour: () => 9,
+    );
     final services = AppServices(
       db: db,
       repo: repo,
@@ -94,7 +103,9 @@ class Harness {
 
   /// Captures [text] and waits for the enrichment queue to drain.
   Future<String> note(String text, {DateTime? at, List<String> images = const [], bool checklist = false}) async {
-    final r = await capture.capture(CaptureDraft(text: text, createdAt: at, imagePaths: images, acceptChecklistSuggestion: checklist));
+    final r = await capture.capture(
+      CaptureDraft(text: text, createdAt: at, imagePaths: images, acceptChecklistSuggestion: checklist),
+    );
     await capture.settle();
     return r!.noteId;
   }

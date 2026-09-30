@@ -135,20 +135,37 @@ class WordPieceTokenizer {
   }
 
   static bool _isWhitespace(int r) =>
-      r == 0x20 || (r >= 0x09 && r <= 0x0D) || r == 0x85 || r == 0xA0 || r == 0x1680 ||
-      (r >= 0x2000 && r <= 0x200A) || r == 0x2028 || r == 0x2029 || r == 0x202F || r == 0x205F ||
+      r == 0x20 ||
+      (r >= 0x09 && r <= 0x0D) ||
+      r == 0x85 ||
+      r == 0xA0 ||
+      r == 0x1680 ||
+      (r >= 0x2000 && r <= 0x200A) ||
+      r == 0x2028 ||
+      r == 0x2029 ||
+      r == 0x202F ||
+      r == 0x205F ||
       r == 0x3000;
 
   static bool _isControl(int r) {
     if (r == 0x09 || r == 0x0A || r == 0x0D) return false;
     if (r < 0x20 || (r >= 0x7F && r <= 0x9F)) return true;
     // Common "format" (Cf) code points: soft hyphen, zero-width chars, bidi marks, BOM.
-    return r == 0xAD || (r >= 0x200B && r <= 0x200F) || (r >= 0x202A && r <= 0x202E) ||
-        (r >= 0x2060 && r <= 0x2064) || (r >= 0x2066 && r <= 0x206F) || r == 0xFEFF;
+    return r == 0xAD ||
+        (r >= 0x200B && r <= 0x200F) ||
+        (r >= 0x202A && r <= 0x202E) ||
+        (r >= 0x2060 && r <= 0x2064) ||
+        (r >= 0x2066 && r <= 0x206F) ||
+        r == 0xFEFF;
   }
 
   static bool _isCjk(int r) =>
-      (r >= 0x4E00 && r <= 0x9FFF) || (r >= 0x3400 && r <= 0x4DBF) || (r >= 0x20000 && r <= 0x2A6DF) ||
-      (r >= 0x2A700 && r <= 0x2B73F) || (r >= 0x2B740 && r <= 0x2B81F) || (r >= 0x2B820 && r <= 0x2CEAF) ||
-      (r >= 0xF900 && r <= 0xFAFF) || (r >= 0x2F800 && r <= 0x2FA1F);
+      (r >= 0x4E00 && r <= 0x9FFF) ||
+      (r >= 0x3400 && r <= 0x4DBF) ||
+      (r >= 0x20000 && r <= 0x2A6DF) ||
+      (r >= 0x2A700 && r <= 0x2B73F) ||
+      (r >= 0x2B740 && r <= 0x2B81F) ||
+      (r >= 0x2B820 && r <= 0x2CEAF) ||
+      (r >= 0xF900 && r <= 0xFAFF) ||
+      (r >= 0x2F800 && r <= 0x2FA1F);
 }

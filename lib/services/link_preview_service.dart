@@ -24,10 +24,15 @@ class LinkPreviewService {
     final uri = Uri.tryParse(url);
     if (uri == null || !(uri.scheme == 'http' || uri.scheme == 'https')) return null;
     try {
-      final response = await _client.get(uri, headers: const {
-        'User-Agent': 'Mozilla/5.0 (compatible; PersonalStorage/1.0; +link-preview)',
-        'Accept': 'text/html,application/xhtml+xml',
-      }).timeout(const Duration(seconds: 6));
+      final response = await _client
+          .get(
+            uri,
+            headers: const {
+              'User-Agent': 'Mozilla/5.0 (compatible; PersonalStorage/1.0; +link-preview)',
+              'Accept': 'text/html,application/xhtml+xml',
+            },
+          )
+          .timeout(const Duration(seconds: 6));
       if (response.statusCode >= 400) return null;
       final type = response.headers['content-type'] ?? '';
       if (type.isNotEmpty && !type.contains('html')) return null;

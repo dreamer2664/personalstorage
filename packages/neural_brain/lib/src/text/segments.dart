@@ -78,5 +78,4 @@ List<Segment> splitSentences(Segment seg) {
 }
 
 /// Lines, then sentences: the granularity at which actions are extracted.
-List<Segment> splitIntoClauses(String text) =>
-    [for (final line in splitLines(text)) ...splitSentences(line)];
+List<Segment> splitIntoClauses(String text) => [for (final line in splitLines(text)) ...splitSentences(line)];

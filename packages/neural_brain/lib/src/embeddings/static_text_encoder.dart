@@ -24,9 +24,9 @@ class StaticTextEncoder extends SyncTextEncoder {
     required this.unkId,
     required this.normalize,
     required this.maxTokens,
-  })  : _matrix = matrix,
-        _scales = scales,
-        vocabSize = scales.length;
+  }) : _matrix = matrix,
+       _scales = scales,
+       vocabSize = scales.length;
 
   @override
   final String id;
@@ -54,7 +54,11 @@ class StaticTextEncoder extends SyncTextEncoder {
     final dim = header['dim']! as int;
     final vocabSize = header['vocab_size']! as int;
 
-    final vocabBytes = Uint8List.sublistView(bytes, sections['vocab']![0], sections['vocab']![0] + sections['vocab']![1]);
+    final vocabBytes = Uint8List.sublistView(
+      bytes,
+      sections['vocab']![0],
+      sections['vocab']![0] + sections['vocab']![1],
+    );
     final tokens = utf8.decode(vocabBytes).split('\n');
     if (tokens.length != vocabSize) {
       throw FormatException('Vocabulary size mismatch: ${tokens.length} != $vocabSize');

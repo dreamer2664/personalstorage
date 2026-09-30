@@ -81,9 +81,9 @@ class Tokenizer {
       Language.it => italianStopwords,
       Language.unknown => allStopwords,
     };
-    return tokenize(text)
-        .where((t) => t.norm.length >= 2 && !t.isNumeric && !stop.contains(t.norm))
-        .toList(growable: false);
+    return tokenize(
+      text,
+    ).where((t) => t.norm.length >= 2 && !t.isNumeric && !stop.contains(t.norm)).toList(growable: false);
   }
 
   /// Distinct stems (both EN and IT variants) of the content words.

@@ -57,21 +57,20 @@ class AppSettings {
     String? cloudBaseUrl,
     String? cloudModel,
     int? cloudDim,
-  }) =>
-      AppSettings(
-        themeMode: themeMode ?? this.themeMode,
-        haptics: haptics ?? this.haptics,
-        autoSaveVoice: autoSaveVoice ?? this.autoSaveVoice,
-        preferOnDeviceSpeech: preferOnDeviceSpeech ?? this.preferOnDeviceSpeech,
-        fetchLinkPreviews: fetchLinkPreviews ?? this.fetchLinkPreviews,
-        edgeThreshold: edgeThreshold ?? this.edgeThreshold,
-        showTagHubs: showTagHubs ?? this.showTagHubs,
-        reminderHour: reminderHour ?? this.reminderHour,
-        cloudEmbeddings: cloudEmbeddings ?? this.cloudEmbeddings,
-        cloudBaseUrl: cloudBaseUrl ?? this.cloudBaseUrl,
-        cloudModel: cloudModel ?? this.cloudModel,
-        cloudDim: cloudDim ?? this.cloudDim,
-      );
+  }) => AppSettings(
+    themeMode: themeMode ?? this.themeMode,
+    haptics: haptics ?? this.haptics,
+    autoSaveVoice: autoSaveVoice ?? this.autoSaveVoice,
+    preferOnDeviceSpeech: preferOnDeviceSpeech ?? this.preferOnDeviceSpeech,
+    fetchLinkPreviews: fetchLinkPreviews ?? this.fetchLinkPreviews,
+    edgeThreshold: edgeThreshold ?? this.edgeThreshold,
+    showTagHubs: showTagHubs ?? this.showTagHubs,
+    reminderHour: reminderHour ?? this.reminderHour,
+    cloudEmbeddings: cloudEmbeddings ?? this.cloudEmbeddings,
+    cloudBaseUrl: cloudBaseUrl ?? this.cloudBaseUrl,
+    cloudModel: cloudModel ?? this.cloudModel,
+    cloudDim: cloudDim ?? this.cloudDim,
+  );
 }
 
 enum ThemeModeSetting { system, light, dark }
@@ -88,7 +87,10 @@ class SettingsNotifier extends Notifier<AppSettings> {
     _prefs = ref.watch(sharedPreferencesProvider);
     const d = AppSettings();
     final s = AppSettings(
-      themeMode: ThemeModeSetting.values.firstWhere((m) => m.name == _prefs.getString('theme'), orElse: () => d.themeMode),
+      themeMode: ThemeModeSetting.values.firstWhere(
+        (m) => m.name == _prefs.getString('theme'),
+        orElse: () => d.themeMode,
+      ),
       haptics: _prefs.getBool('haptics') ?? d.haptics,
       autoSaveVoice: _prefs.getBool('autoSaveVoice') ?? d.autoSaveVoice,
       preferOnDeviceSpeech: _prefs.getBool('onDeviceSpeech') ?? d.preferOnDeviceSpeech,

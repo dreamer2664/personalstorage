@@ -5,11 +5,12 @@ import 'vector_math.dart';
 
 /// Minimal HTTP seam so this package stays free of any networking dependency. The app injects
 /// an implementation backed by `package:http` (and tests inject a fake).
-typedef JsonPost = Future<Map<String, Object?>> Function(
-  Uri url,
-  Map<String, String> headers,
-  Map<String, Object?> body,
-);
+typedef JsonPost =
+    Future<Map<String, Object?>> Function(
+      Uri url,
+      Map<String, String> headers,
+      Map<String, Object?> body,
+    );
 
 /// Opt-in cloud embeddings for any **OpenAI-compatible** `/embeddings` endpoint (OpenAI, Azure,
 /// Ollama, LM Studio, vLLM ...). Disabled by default - nothing leaves the device unless the
@@ -67,8 +68,10 @@ class CloudTextEncoder implements TextEncoder {
       for (final row in rows) {
         final raw = (row['embedding']! as List<Object?>).cast<num>();
         if (raw.length != dim) {
-          throw StateError('Provider returned ${raw.length}-d vectors, expected $dim. '
-              'Adjust the dimension in Settings.');
+          throw StateError(
+            'Provider returned ${raw.length}-d vectors, expected $dim. '
+            'Adjust the dimension in Settings.',
+          );
         }
         out.add(normalizeInPlace(Float32List.fromList([for (final v in raw) v.toDouble()])));
       }

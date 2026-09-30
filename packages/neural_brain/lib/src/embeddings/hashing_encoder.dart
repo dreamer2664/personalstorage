@@ -35,7 +35,9 @@ class HashingEncoder extends SyncTextEncoder {
   @override
   Float32List encodeSync(String text) {
     final v = Float32List(dim);
-    final words = foldForMatching(text).split(RegExp(r'[^\p{L}\p{N}]+', unicode: true)).where((w) => w.isNotEmpty).toList();
+    final words = foldForMatching(
+      text,
+    ).split(RegExp(r'[^\p{L}\p{N}]+', unicode: true)).where((w) => w.isNotEmpty).toList();
     for (var i = 0; i < words.length; i++) {
       final w = words[i];
       _add(v, 'w:$w', 1.0);

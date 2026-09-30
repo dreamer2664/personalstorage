@@ -5,7 +5,13 @@ import 'package:test/test.dart';
 
 KnowledgeGraph twoCliques({int size = 10, bool bridge = true}) {
   final notes = [
-    for (var i = 0; i < size * 2; i++) GraphNoteInput(id: 'n$i', label: 'Note $i', categoryId: i < size ? 'a' : 'b', tags: [i < size ? 'alpha' : 'beta']),
+    for (var i = 0; i < size * 2; i++)
+      GraphNoteInput(
+        id: 'n$i',
+        label: 'Note $i',
+        categoryId: i < size ? 'a' : 'b',
+        tags: [i < size ? 'alpha' : 'beta'],
+      ),
   ];
   final edges = <GraphEdgeInput>[];
   for (var c = 0; c < 2; c++) {
@@ -191,7 +197,12 @@ void main() {
 
     test('empty and single-node graphs are safe', () {
       ForceLayout.fromGraph(GraphBuilder.build(notes: const [], edges: const [])).step(iterations: 5);
-      final one = ForceLayout.fromGraph(GraphBuilder.build(notes: const [GraphNoteInput(id: 'a', label: 'A')], edges: const []))..settle();
+      final one = ForceLayout.fromGraph(
+        GraphBuilder.build(
+          notes: const [GraphNoteInput(id: 'a', label: 'A')],
+          edges: const [],
+        ),
+      )..settle();
       expect(one.x[0].isFinite, isTrue);
     });
 
@@ -200,7 +211,8 @@ void main() {
       const n = 1000;
       final notes = [for (var i = 0; i < n; i++) GraphNoteInput(id: '$i', label: '$i')];
       final edges = [
-        for (var i = 0; i < n * 2; i++) GraphEdgeInput('${rnd.nextInt(n)}', '${rnd.nextInt(n)}', 0.3 + rnd.nextDouble() * 0.7),
+        for (var i = 0; i < n * 2; i++)
+          GraphEdgeInput('${rnd.nextInt(n)}', '${rnd.nextInt(n)}', 0.3 + rnd.nextDouble() * 0.7),
       ];
       final l = ForceLayout.fromGraph(GraphBuilder.build(notes: notes, edges: edges));
       l.step(iterations: 5); // warm-up

@@ -35,25 +35,30 @@ class AppUnderTest {
     final db = AppDatabase(NativeDatabase.memory());
     final reminders = FakeReminders();
     final modelBytes = Uint8List.fromList(File('assets/models/potion-base-8m.psm').readAsBytesSync());
-    final container = ProviderContainer(overrides: [
-      sharedPreferencesProvider.overrideWithValue(p),
-      databaseProvider.overrideWithValue(db),
-      modelBytesProvider.overrideWithValue(() => Future.value(modelBytes)),
-      remindersProvider.overrideWithValue(reminders),
-      mediaStoreProvider.overrideWithValue(FakeMedia()),
-      httpClientProvider.overrideWithValue(MockClient((_) async => http.Response('', 404))),
-    ]);
+    final container = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(p),
+        databaseProvider.overrideWithValue(db),
+        modelBytesProvider.overrideWithValue(() => Future.value(modelBytes)),
+        remindersProvider.overrideWithValue(reminders),
+        mediaStoreProvider.overrideWithValue(FakeMedia()),
+        httpClientProvider.overrideWithValue(MockClient((_) async => http.Response('', 404))),
+      ],
+    );
     return AppUnderTest._(db, p, reminders, container);
   }
 
-  Widget get widget => UncontrolledProviderScope(container: container, child: const PersonalStorageApp());
+  Widget widgetWith({String? initialRoute}) => UncontrolledProviderScope(
+    container: container,
+    child: PersonalStorageApp(initialRoute: initialRoute),
+  );
 
   /// Pumps the app until the shell is on screen (the splash spins forever, so no pumpAndSettle).
-  Future<void> launch(WidgetTester tester) async {
+  Future<void> launch(WidgetTester tester, {String? initialRoute}) async {
     tester.view.physicalSize = const Size(780, 1688);
     tester.view.devicePixelRatio = 2;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(widget);
+    await tester.pumpWidget(widgetWith(initialRoute: initialRoute));
     for (var i = 0; i < 60; i++) {
       await tester.pump(const Duration(milliseconds: 50));
       if (container.read(appServicesProvider).hasValue) break;
@@ -69,14 +74,17 @@ class AppUnderTest {
     late T value;
     Object? error;
     StackTrace? stack;
-    action().then((v) {
-      value = v;
-      done = true;
-    }, onError: (Object e, StackTrace s) {
-      error = e;
-      stack = s;
-      done = true;
-    });
+    action().then(
+      (v) {
+        value = v;
+        done = true;
+      },
+      onError: (Object e, StackTrace s) {
+        error = e;
+        stack = s;
+        done = true;
+      },
+    );
     for (var i = 0; i < maxPumps && !done; i++) {
       await tester.pump(const Duration(milliseconds: 10));
     }
@@ -87,11 +95,11 @@ class AppUnderTest {
 
   /// Captures [texts] (and waits for enrichment) - the equivalent of the user having used the app.
   Future<void> seed(WidgetTester tester, List<String> texts) => run(tester, () async {
-        for (final t in texts) {
-          await services.capture.capture(CaptureDraft(text: t));
-        }
-        await services.capture.settle();
-      });
+    for (final t in texts) {
+      await services.capture.capture(CaptureDraft(text: t));
+    }
+    await services.capture.settle();
+  });
 
   /// Tears the tree down and lets every outstanding timer fire so the test can finish cleanly.
   Future<void> shutdown(WidgetTester tester) async {

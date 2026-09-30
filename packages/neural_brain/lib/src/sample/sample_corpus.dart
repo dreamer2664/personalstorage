@@ -22,7 +22,11 @@ const List<SampleNote> sampleCorpus = [
   // Groceries & shopping
   SampleNote('milk and eggs', expectCategory: 'shopping', minutesAgo: 5),
   SampleNote('Buy bread, pasta and tomatoes', expectCategory: 'shopping|food', minutesAgo: 90),
-  SampleNote('Shopping list:\n- [ ] olive oil\n- [ ] basil\n- [ ] parmesan\n- [x] coffee', expectCategory: 'shopping', minutesAgo: 240),
+  SampleNote(
+    'Shopping list:\n- [ ] olive oil\n- [ ] basil\n- [ ] parmesan\n- [x] coffee',
+    expectCategory: 'shopping',
+    minutesAgo: 240,
+  ),
   SampleNote('Birthday gift ideas for Anna: a book, a scarf, headphones', minutesAgo: 600),
   SampleNote('Order laundry detergent and toilet paper', expectCategory: 'shopping', minutesAgo: 1000),
 
@@ -36,7 +40,11 @@ const List<SampleNote> sampleCorpus = [
   // Travel cluster
   SampleNote('Book flights to Lisbon for October', expectCategory: 'travel', minutesAgo: 1500),
   SampleNote('Hotel near Alfama in Lisbon, check-in 12 October', expectCategory: 'travel', minutesAgo: 1600),
-  SampleNote('Lisbon itinerary: Belém tower, pastel de nata, tram 28, sunset at the viewpoint', expectCategory: 'travel', minutesAgo: 1700),
+  SampleNote(
+    'Lisbon itinerary: Belém tower, pastel de nata, tram 28, sunset at the viewpoint',
+    expectCategory: 'travel',
+    minutesAgo: 1700,
+  ),
   SampleNote('Need to renew passport before the Lisbon trip', minutesAgo: 1800),
 
   // Work

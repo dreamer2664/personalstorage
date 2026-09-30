@@ -58,10 +58,12 @@ final voiceServiceProvider = Provider<VoiceService>((ref) {
 });
 
 /// Loads the model bytes; replaced in tests.
-final modelBytesProvider = Provider<Future<Uint8List> Function()>((_) => () async {
-      final data = await rootBundle.load(kModelAsset);
-      return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-    });
+final modelBytesProvider = Provider<Future<Uint8List> Function()>(
+  (_) => () async {
+    final data = await rootBundle.load(kModelAsset);
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  },
+);
 
 /// Secret storage for the optional cloud-embeddings API key.
 class SecretsStore {
@@ -141,7 +143,9 @@ final appServicesProvider = FutureProvider<AppServices>((ref) async {
         model: settings.cloudModel,
         dim: settings.cloudDim,
         post: (url, headers, body) async {
-          final r = await client.post(url, headers: headers, body: jsonEncode(body)).timeout(const Duration(seconds: 20));
+          final r = await client
+              .post(url, headers: headers, body: jsonEncode(body))
+              .timeout(const Duration(seconds: 20));
           if (r.statusCode >= 400) throw StateError('Embedding provider error ${r.statusCode}');
           return jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, Object?>;
         },
@@ -161,17 +165,28 @@ final appServicesProvider = FutureProvider<AppServices>((ref) async {
     fetchPreviews: () => ref.read(settingsProvider).fetchLinkPreviews,
     reminderHour: hour,
   );
-  final capture = CaptureService(repo: repo, brain: brain, enrichment: enrichment, reminders: reminders, media: media, reminderHour: hour);
+  final capture = CaptureService(
+    repo: repo,
+    brain: brain,
+    enrichment: enrichment,
+    reminders: reminders,
+    media: media,
+    reminderHour: hour,
+  );
 
-  await reminders.init(onOpenNote: (id) => ref.read(launchRequestProvider.notifier).fire(LaunchActionType.openNote, noteId: id));
+  await reminders.init(
+    onOpenNote: (id) => ref.read(launchRequestProvider.notifier).fire(LaunchActionType.openNote, noteId: id),
+  );
   unawaited(LaunchActions(ref).attach());
 
   // Background housekeeping after the first frame: re-embed stale notes, refresh reminders.
-  unawaited(Future<void>.delayed(const Duration(milliseconds: 400), () async {
-    await enrichment.reindexStale();
-    await reminders.syncAll(await repo.openTasksWithReminders(), hour: hour());
-    await repo.purgeDeletedBefore(DateTime.now().subtract(const Duration(days: 30)));
-  }));
+  unawaited(
+    Future<void>.delayed(const Duration(milliseconds: 400), () async {
+      await enrichment.reindexStale();
+      await reminders.syncAll(await repo.openTasksWithReminders(), hour: hour());
+      await repo.purgeDeletedBefore(DateTime.now().subtract(const Duration(days: 30)));
+    }),
+  );
 
   return AppServices(
     db: db,
@@ -218,13 +233,19 @@ final summariesProvider = StreamProvider<List<NoteSummary>>((ref) {
   return repo.watchSummaries(categoryId: f.categoryId, tag: f.tag);
 });
 
-final recentSummariesProvider = StreamProvider<List<NoteSummary>>((ref) => ref.watch(repositoryProvider).watchSummaries(limit: 4));
+final recentSummariesProvider = StreamProvider<List<NoteSummary>>(
+  (ref) => ref.watch(repositoryProvider).watchSummaries(limit: 4),
+);
 
-final noteDetailProvider = StreamProvider.family<NoteDetail?, String>((ref, id) => ref.watch(repositoryProvider).watchNote(id));
+final noteDetailProvider = StreamProvider.family<NoteDetail?, String>(
+  (ref, id) => ref.watch(repositoryProvider).watchNote(id),
+);
 
 final tasksProvider = StreamProvider<List<TaskInfo>>((ref) => ref.watch(repositoryProvider).watchTasks());
 
-final categoryCountsProvider = StreamProvider<Map<String?, int>>((ref) => ref.watch(repositoryProvider).watchCategoryCounts());
+final categoryCountsProvider = StreamProvider<Map<String?, int>>(
+  (ref) => ref.watch(repositoryProvider).watchCategoryCounts(),
+);
 
 final noteCountProvider = StreamProvider<int>((ref) => ref.watch(repositoryProvider).watchNoteCount());
 

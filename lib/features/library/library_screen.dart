@@ -15,7 +15,9 @@ import '../../core/design/widgets.dart';
 import '../../core/util/debouncer.dart';
 import '../../domain/models.dart';
 import '../../services/note_actions.dart';
+
 import 'package:neural_brain/neural_brain.dart' show Ontology;
+
 import '../../services/sample_data.dart';
 import '../../services/search_service.dart';
 import '../note/note_detail_screen.dart';
@@ -73,7 +75,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     });
   }
 
-  void _open(NoteSummary n) => Navigator.of(context).push(CupertinoPageRoute<void>(builder: (_) => NoteDetailScreen(noteId: n.id)));
+  void _open(NoteSummary n) =>
+      Navigator.of(context).push(CupertinoPageRoute<void>(builder: (_) => NoteDetailScreen(noteId: n.id)));
 
   void _flash(ToastData t) {
     _toastTimer?.cancel();
@@ -90,10 +93,18 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
     await actions.delete(n.id);
     Haptics.medium();
     if (!mounted) return;
-    _flash(ToastData('Deleted "${n.title}"', icon: CupertinoIcons.trash_fill, color: context.ps.secondaryLabel, actionLabel: 'Undo', onAction: () async {
-      await actions.undelete(n.id);
-      if (mounted) setState(() => _toast = null);
-    }));
+    _flash(
+      ToastData(
+        'Deleted "${n.title}"',
+        icon: CupertinoIcons.trash_fill,
+        color: context.ps.secondaryLabel,
+        actionLabel: 'Undo',
+        onAction: () async {
+          await actions.undelete(n.id);
+          if (mounted) setState(() => _toast = null);
+        },
+      ),
+    );
     if (_results != null) _onQuery(_query.text);
   }
 
@@ -103,8 +114,15 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       builder: (ctx) => CupertinoActionSheet(
         title: Text(n.title),
         actions: [
-          CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx, 'pin'), child: Text(n.pinned ? 'Unpin' : 'Pin to top')),
-          CupertinoActionSheetAction(isDestructiveAction: true, onPressed: () => Navigator.pop(ctx, 'delete'), child: const Text('Delete')),
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.pop(ctx, 'pin'),
+            child: Text(n.pinned ? 'Unpin' : 'Pin to top'),
+          ),
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.pop(ctx, 'delete'),
+            child: const Text('Delete'),
+          ),
         ],
         cancelButton: CupertinoActionSheetAction(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
       ),
@@ -145,7 +163,8 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   trailing: GlassIconButton(
                     icon: CupertinoIcons.gear,
                     semanticLabel: 'Settings',
-                    onPressed: () => Navigator.of(context).push(CupertinoPageRoute<void>(builder: (_) => const SettingsScreen())),
+                    onPressed: () =>
+                        Navigator.of(context).push(CupertinoPageRoute<void>(builder: (_) => const SettingsScreen())),
                   ),
                 ),
                 Padding(
@@ -161,22 +180,32 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       placeholderStyle: PsText.body(ps.tertiaryLabel).copyWith(fontSize: 16),
                       style: PsText.body(ps.label).copyWith(fontSize: 16),
                       cursorColor: ps.accent,
-                      prefix: Padding(padding: const EdgeInsets.only(left: 14), child: Icon(CupertinoIcons.search, size: 18, color: ps.secondaryLabel)),
+                      prefix: Padding(
+                        padding: const EdgeInsets.only(left: 14),
+                        child: Icon(CupertinoIcons.search, size: 18, color: ps.secondaryLabel),
+                      ),
                       suffix: _searching
-                          ? const Padding(padding: EdgeInsets.only(right: 14), child: CupertinoActivityIndicator(radius: 8))
+                          ? const Padding(
+                              padding: EdgeInsets.only(right: 14),
+                              child: CupertinoActivityIndicator(radius: 8),
+                            )
                           : (_query.text.isEmpty
-                              ? null
-                              : GestureDetector(
-                                  onTap: () {
-                                    _query.clear();
-                                    _onQuery('');
-                                  },
-                                  child: Padding(padding: const EdgeInsets.only(right: 12), child: Icon(CupertinoIcons.xmark_circle_fill, size: 18, color: ps.tertiaryLabel)),
-                                )),
+                                ? null
+                                : GestureDetector(
+                                    onTap: () {
+                                      _query.clear();
+                                      _onQuery('');
+                                    },
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(right: 12),
+                                      child: Icon(CupertinoIcons.xmark_circle_fill, size: 18, color: ps.tertiaryLabel),
+                                    ),
+                                  )),
                     ),
                   ),
                 ),
-                if (_results == null) _FilterBar(counts: counts, total: total, filter: filter, ontology: services?.ontology),
+                if (_results == null)
+                  _FilterBar(counts: counts, total: total, filter: filter, ontology: services?.ontology),
                 Expanded(
                   child: _results != null
                       ? _resultsList(now)
@@ -188,7 +217,12 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                 ),
               ],
             ),
-            Positioned(top: 4, left: 24, right: 24, child: Center(child: GlassToast(data: _toast))),
+            Positioned(
+              top: 4,
+              left: 24,
+              right: 24,
+              child: Center(child: GlassToast(data: _toast)),
+            ),
           ],
         ),
       ),
@@ -198,7 +232,11 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
   Widget _resultsList(DateTime now) {
     final list = _results!;
     if (list.isEmpty) {
-      return PsEmptyState(icon: CupertinoIcons.search, title: 'No matches', message: 'Nothing in your notes is close to "${_query.text.trim()}".');
+      return PsEmptyState(
+        icon: CupertinoIcons.search,
+        title: 'No matches',
+        message: 'Nothing in your notes is close to "${_query.text.trim()}".',
+      );
     }
     return ListView.separated(
       padding: EdgeInsets.fromLTRB(16, 4, 16, widget.bottomInset + 16),
@@ -206,7 +244,13 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       separatorBuilder: (_, _) => const SizedBox(height: 10),
       itemBuilder: (context, i) => FadeSlideIn(
         index: i,
-        child: NoteCard(note: list[i].note, now: now, reasons: list[i].reasons, onTap: () => _open(list[i].note), onLongPress: () => _menu(list[i].note)),
+        child: NoteCard(
+          note: list[i].note,
+          now: now,
+          reasons: list[i].reasons,
+          onTap: () => _open(list[i].note),
+          onLongPress: () => _menu(list[i].note),
+        ),
       ),
     );
   }
@@ -218,22 +262,33 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           icon: CupertinoIcons.tray,
           title: 'Nothing captured yet',
           message: 'Notes you capture show up here, automatically organised. No folders, no tagging.',
-          action: Column(mainAxisSize: MainAxisSize.min, children: [
-            PsButton(
-              label: _loadingSamples ? 'Adding…' : 'Try with sample notes',
-              icon: CupertinoIcons.sparkles,
-              onPressed: _loadingSamples ? null : _loadSamples,
-            ),
-            const SizedBox(height: 10),
-            PsButton(label: 'Capture a note', style: PsButtonStyle.plain, onPressed: () => ref.read(selectedTabProvider.notifier).select(0)),
-          ]),
+          action: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              PsButton(
+                label: _loadingSamples ? 'Adding…' : 'Try with sample notes',
+                icon: CupertinoIcons.sparkles,
+                onPressed: _loadingSamples ? null : _loadSamples,
+              ),
+              const SizedBox(height: 10),
+              PsButton(
+                label: 'Capture a note',
+                style: PsButtonStyle.plain,
+                onPressed: () => ref.read(selectedTabProvider.notifier).select(0),
+              ),
+            ],
+          ),
         );
       }
       return PsEmptyState(
         icon: CupertinoIcons.line_horizontal_3_decrease,
         title: 'No notes here',
         message: 'Nothing matches this filter yet.',
-        action: PsButton(label: 'Show all', style: PsButtonStyle.tinted, onPressed: () => ref.read(libraryFilterProvider.notifier).set(const LibraryFilter())),
+        action: PsButton(
+          label: 'Show all',
+          style: PsButtonStyle.tinted,
+          onPressed: () => ref.read(libraryFilterProvider.notifier).set(const LibraryFilter()),
+        ),
       );
     }
     return ListView.builder(
@@ -288,7 +343,12 @@ class _FilterBar extends ConsumerWidget {
           if (filter.tag != null)
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: PsChip(label: '#${filter.tag}', color: ps.accent, filled: true, onRemove: () => notifier.set(LibraryFilter(categoryId: filter.categoryId))),
+              child: PsChip(
+                label: '#${filter.tag}',
+                color: ps.accent,
+                filled: true,
+                onRemove: () => notifier.set(LibraryFilter(categoryId: filter.categoryId)),
+              ),
             ),
           Padding(
             padding: const EdgeInsets.only(right: 8),

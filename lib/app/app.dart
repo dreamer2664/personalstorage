@@ -13,7 +13,22 @@ import 'shell.dart';
 /// Application root: theme, routes (including the `/capture` and `/voice` deep links used by
 /// lock-screen widgets and Siri) and the bootstrap splash.
 class PersonalStorageApp extends ConsumerWidget {
-  const PersonalStorageApp({super.key});
+  const PersonalStorageApp({this.initialRoute, super.key});
+
+  /// Overrides the platform's initial route (tests); by default the platform decides, which is
+  /// how a cold start from a widget / tile / shortcut deep link arrives.
+  final String? initialRoute;
+
+  /// `personalstorage:///voice`, `personalstorage://voice` and `/voice` all mean "voice".
+  @visibleForTesting
+  static String normalizeRoute(String? name) {
+    if (name == null || name.isEmpty) return '/';
+    if (!name.contains('://')) return name;
+    final uri = Uri.tryParse(name);
+    if (uri == null || uri.scheme != 'personalstorage') return '/';
+    if (uri.path.isNotEmpty && uri.path != '/') return uri.path;
+    return uri.host.isEmpty ? '/' : '/${uri.host}';
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,9 +43,10 @@ class PersonalStorageApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: buildCupertinoTheme(brightness: brightness),
       builder: (context, child) => PsThemeScope(child: child ?? const SizedBox.shrink()),
-      initialRoute: '/',
+      initialRoute: initialRoute,
       onGenerateRoute: (settings) {
-        switch (settings.name) {
+        final route = normalizeRoute(settings.name);
+        switch (route) {
           case '/capture':
           case '/voice':
             // Deep links: `personalstorage:///capture` and `personalstorage:///voice`.
@@ -39,7 +55,8 @@ class PersonalStorageApp extends ConsumerWidget {
               settings: settings,
               opaque: false,
               transitionDuration: Duration.zero,
-              pageBuilder: (_, _, _) => _FireAndPop(type: settings.name == '/voice' ? LaunchActionType.voice : LaunchActionType.capture),
+              pageBuilder: (_, _, _) =>
+                  _FireAndPop(type: route == '/voice' ? LaunchActionType.voice : LaunchActionType.capture),
             );
           default:
             return CupertinoPageRoute<void>(settings: settings, builder: (_) => const _Bootstrap());
@@ -64,7 +81,14 @@ class _FireAndPopState extends ConsumerState<_FireAndPop> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(launchRequestProvider.notifier).fire(widget.type);
-      if (mounted && Navigator.of(context).canPop()) Navigator.of(context).pop();
+      if (!mounted) return;
+      final nav = Navigator.of(context);
+      if (nav.canPop()) {
+        nav.pop(); // warm start: the app is already underneath
+      } else {
+        // Cold start with a bare deep-link URI: there is no root route yet, so become one.
+        nav.pushReplacement(CupertinoPageRoute<void>(builder: (_) => const _Bootstrap()));
+      }
     });
   }
 
@@ -97,7 +121,11 @@ class _Splash extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            GlassPanel(radius: 28, padding: const EdgeInsets.all(22), child: Icon(CupertinoIcons.sparkles, size: 34, color: ps.accent)),
+            GlassPanel(
+              radius: 28,
+              padding: const EdgeInsets.all(22),
+              child: Icon(CupertinoIcons.sparkles, size: 34, color: ps.accent),
+            ),
             const SizedBox(height: 18),
             Text('Personal Storage', style: PsText.title(ps.label)),
             const SizedBox(height: 14),

@@ -47,7 +47,10 @@ class PriorityScorer {
     r"\b(?:important|importante|priority|priorita|priorità|high priority|don'?t forget|do not forget|non dimenticare|must|essential|fondamentale|vital)\b",
     caseSensitive: false,
   );
-  static final RegExp _deadline = RegExp(r'\b(?:deadline|due|scadenza|scade|entro|expires?|last day)\b', caseSensitive: false);
+  static final RegExp _deadline = RegExp(
+    r'\b(?:deadline|due|scadenza|scade|entro|expires?|last day)\b',
+    caseSensitive: false,
+  );
   static final RegExp _shouting = RegExp(r'!{2,}');
   static final RegExp _relaxed = RegExp(
     r'\b(?:someday|maybe|eventually|when i have time|nice to have|one day|at some point|whenever|prima o poi|magari|forse|quando ho tempo|un giorno)\b',
@@ -106,10 +109,10 @@ class PriorityScorer {
     final level = score >= 0.7
         ? Priority.high
         : score >= 0.4
-            ? Priority.medium
-            : score >= 0.15
-                ? Priority.low
-                : Priority.none;
+        ? Priority.medium
+        : score >= 0.15
+        ? Priority.low
+        : Priority.none;
     return PriorityAssessment(level, score, reasons);
   }
 }

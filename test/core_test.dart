@@ -12,10 +12,10 @@ import 'package:personalstorage/services/reminders.dart';
 import 'support/fonts.dart';
 
 Widget _host(Widget child, {Brightness brightness = Brightness.light}) => CupertinoApp(
-      theme: buildCupertinoTheme(brightness: brightness),
-      builder: (context, c) => PsThemeScope(child: c!),
-      home: Center(child: SizedBox(width: 360, child: child)),
-    );
+  theme: buildCupertinoTheme(brightness: brightness),
+  builder: (context, c) => PsThemeScope(child: c!),
+  home: Center(child: SizedBox(width: 360, child: child)),
+);
 
 void main() {
   setUpAll(loadAppFonts);
@@ -82,17 +82,30 @@ void main() {
   group('design system', () {
     for (final b in Brightness.values) {
       testWidgets('glass panel, chips and buttons render in ${b.name} mode without errors', (t) async {
-        await t.pumpWidget(_host(
-          Column(mainAxisSize: MainAxisSize.min, children: [
-            const GlassPanel(child: SizedBox(height: 40, width: double.infinity)),
-            const GlassPanel(blur: false, onTap: null, child: SizedBox(height: 40, width: double.infinity)),
-            const PsChip(label: 'Shopping', icon: CupertinoIcons.bag_fill, color: Color(0xFFFF9F0A)),
-            PsChip(label: 'filled', filled: true, onRemove: () {}),
-            PsButton(label: 'A very long button label that must wrap instead of overflowing the row', icon: CupertinoIcons.sparkles, onPressed: () {}),
-            const PsEmptyState(icon: CupertinoIcons.tray, title: 'Nothing here', message: 'A message that explains the empty state.'),
-          ]),
-          brightness: b,
-        ));
+        await t.pumpWidget(
+          _host(
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const GlassPanel(child: SizedBox(height: 40, width: double.infinity)),
+                const GlassPanel(blur: false, onTap: null, child: SizedBox(height: 40, width: double.infinity)),
+                const PsChip(label: 'Shopping', icon: CupertinoIcons.bag_fill, color: Color(0xFFFF9F0A)),
+                PsChip(label: 'filled', filled: true, onRemove: () {}),
+                PsButton(
+                  label: 'A very long button label that must wrap instead of overflowing the row',
+                  icon: CupertinoIcons.sparkles,
+                  onPressed: () {},
+                ),
+                const PsEmptyState(
+                  icon: CupertinoIcons.tray,
+                  title: 'Nothing here',
+                  message: 'A message that explains the empty state.',
+                ),
+              ],
+            ),
+            brightness: b,
+          ),
+        );
         await t.pump(const Duration(milliseconds: 300));
         expect(t.takeException(), isNull, reason: 'no overflow even with a very long label');
       });
@@ -107,17 +120,21 @@ void main() {
     });
 
     testWidgets('large accessibility text does not overflow the button', (t) async {
-      await t.pumpWidget(MediaQuery(
-        data: const MediaQueryData(textScaler: TextScaler.linear(2.4)),
-        child: _host(PsButton(label: 'Try with sample notes', icon: CupertinoIcons.sparkles, onPressed: () {})),
-      ));
+      await t.pumpWidget(
+        MediaQuery(
+          data: const MediaQueryData(textScaler: TextScaler.linear(2.4)),
+          child: _host(PsButton(label: 'Try with sample notes', icon: CupertinoIcons.sparkles, onPressed: () {})),
+        ),
+      );
       await t.pump();
       expect(t.takeException(), isNull);
     });
 
     for (var n = 1; n <= 6; n++) {
       testWidgets('photo collage with $n image(s) lays out', (t) async {
-        await t.pumpWidget(_host(PhotoCollage(paths: [for (var i = 0; i < n; i++) '/nonexistent/$i.jpg'], height: 200)));
+        await t.pumpWidget(
+          _host(PhotoCollage(paths: [for (var i = 0; i < n; i++) '/nonexistent/$i.jpg'], height: 200)),
+        );
         await t.pump();
         expect(t.takeException(), isNull);
         if (n > 4) expect(find.text('+${n - 4}'), findsOneWidget);

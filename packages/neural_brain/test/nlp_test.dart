@@ -188,8 +188,13 @@ void main() {
     });
 
     test('due dates scale the score', () {
-      Priority level(String text) =>
-          scorer.assess(text, now: now, actions: actions.extract(text, now: now)).level;
+      Priority level(String text) => scorer
+          .assess(
+            text,
+            now: now,
+            actions: actions.extract(text, now: now),
+          )
+          .level;
       expect(level('Call mom tomorrow at 9am') > Priority.none, isTrue);
       expect(level('Call mom in 30 minutes') >= Priority.medium, isTrue);
     });

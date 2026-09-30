@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:personalstorage/app/app.dart';
 import 'package:personalstorage/app/navigation.dart';
 import 'package:personalstorage/services/launch_actions.dart';
 import 'package:personalstorage/services/sample_data.dart';
@@ -23,7 +24,13 @@ void main() {
   setUp(() async {
     app = await AppUnderTest.create();
     // Haptics call a platform channel; swallow it in tests.
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(SystemChannels.platform, (_) async => null);
+    final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    messenger.setMockMethodCallHandler(SystemChannels.platform, (_) async => null);
+    // A phone without any speech engine: `initialize` answers "false".
+    messenger.setMockMethodCallHandler(
+      const MethodChannel('plugin.csdcorp.com/speech_to_text'),
+      (call) async => call.method == 'initialize' ? false : null,
+    );
   });
 
   Future<void> type(WidgetTester t, String text) async {
@@ -198,11 +205,45 @@ void main() {
       await app.shutdown(t);
     });
 
+    test('route normalisation understands every form the platforms deliver', () {
+      String n(String? s) => PersonalStorageApp.normalizeRoute(s);
+      expect(n('/voice'), '/voice');
+      expect(n('personalstorage:///voice'), '/voice', reason: 'Android widget / iOS widgetURL (empty host)');
+      expect(n('personalstorage://capture'), '/capture', reason: 'host form');
+      expect(n('personalstorage:///capture?src=tile'), '/capture');
+      expect(n(null), '/');
+      expect(n(''), '/');
+      expect(n('https://example.com/voice'), '/', reason: 'foreign schemes are never treated as routes');
+      expect(n('/some/plain/route'), '/some/plain/route', reason: 'plain route names pass through');
+    });
+
+    testWidgets('a cold start from a bare deep-link URI ends up in the app, not on a blank screen', (t) async {
+      await app.launch(t, initialRoute: 'personalstorage:///capture');
+      await settle(t, frames: 25);
+      expect(find.text('Capture a thought…'), findsOneWidget);
+      expect(app.container.read(selectedTabProvider), 0);
+      await app.shutdown(t);
+    });
+
+    testWidgets('a cold start into /voice reaches the composer and tries to start dictation', (t) async {
+      await app.launch(t, initialRoute: '/voice');
+      await settle(t, frames: 30);
+      expect(find.text('Capture a thought…'), findsOneWidget);
+      // There is no speech engine in the test VM: the UI must degrade gracefully, not crash.
+      expect(find.text('Voice input unavailable'), findsOneWidget);
+      await app.shutdown(t);
+    });
+
     testWidgets('a shared text lands in the composer', (t) async {
       await app.launch(t);
-      app.container.read(launchRequestProvider.notifier).fire(LaunchActionType.capture, text: 'https://example.com/article');
+      app.container
+          .read(launchRequestProvider.notifier)
+          .fire(LaunchActionType.capture, text: 'https://example.com/article');
       await settle(t, frames: 10);
-      expect(t.widget<CupertinoTextField>(find.byType(CupertinoTextField).first).controller!.text, contains('https://example.com/article'));
+      expect(
+        t.widget<CupertinoTextField>(find.byType(CupertinoTextField).first).controller!.text,
+        contains('https://example.com/article'),
+      );
       await app.shutdown(t);
     });
   });

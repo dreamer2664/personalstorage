@@ -11,7 +11,9 @@ void main() {
     final a = brain.analyzeSync(text, now: DateTime(2026, 9, 30, 10));
     final good = want.split('|').contains(a.categoryId);
     if (good) ok++;
-    print('${good ? '✓' : '✗'} ${a.categoryId}(${a.categoryConfidence.toStringAsFixed(2)}) want $want :: $text   tags=${a.tags.map((t) => t.name).toList()}');
+    print(
+      '${good ? '✓' : '✗'} ${a.categoryId}(${a.categoryConfidence.toStringAsFixed(2)}) want $want :: $text   tags=${a.tags.map((t) => t.name).toList()}',
+    );
   }
   print('held-out accuracy: $ok/${freshNotes.length} = ${(ok / freshNotes.length * 100).toStringAsFixed(0)}%');
 }

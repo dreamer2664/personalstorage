@@ -57,7 +57,9 @@ class ChecklistDetector {
     if (bullets.isNotEmpty && (bullets.length >= 2 || bullets.any((b) => b.checked != null))) {
       final nonBullets = lines.where((l) => !l.bullet).toList();
       if (nonBullets.length <= 1 && bullets.length >= nonBullets.length * 2) {
-        final title = nonBullets.isNotEmpty && lines.first == nonBullets.first ? _cleanTitle(nonBullets.first.text) : null;
+        final title = nonBullets.isNotEmpty && lines.first == nonBullets.first
+            ? _cleanTitle(nonBullets.first.text)
+            : null;
         return ChecklistDetection(
           title: title,
           items: [for (final b in bullets) ChecklistItemDraft(_cleanItem(b.text), checked: b.checked ?? false)],
@@ -83,7 +85,11 @@ class ChecklistDetector {
         }
       }
       final buy = _buyCue.firstMatch(line);
-      if (buy != null && !RegExp(r'\b(?:tomorrow|today|tonight|domani|oggi|stasera|at|alle|by|before|entro)\b', caseSensitive: false).hasMatch(buy.namedGroup('rest')!)) {
+      if (buy != null &&
+          !RegExp(
+            r'\b(?:tomorrow|today|tonight|domani|oggi|stasera|at|alle|by|before|entro)\b',
+            caseSensitive: false,
+          ).hasMatch(buy.namedGroup('rest')!)) {
         final items = _splitInline(buy.namedGroup('rest')!);
         if (items.length >= 3 || (items.length == 2 && items.every((i) => i.text.split(' ').length <= 2))) {
           return ChecklistDetection(
@@ -96,7 +102,8 @@ class ChecklistDetector {
     }
 
     // 3. Several short lines without punctuation: a list of fragments.
-    if (lines.length >= 3 && lines.every((l) => !l.bullet && l.text.split(RegExp(r'\s+')).length <= 6 && !_sentencePunct.hasMatch(l.text))) {
+    if (lines.length >= 3 &&
+        lines.every((l) => !l.bullet && l.text.split(RegExp(r'\s+')).length <= 6 && !_sentencePunct.hasMatch(l.text))) {
       return ChecklistDetection(
         items: [for (final l in lines) ChecklistItemDraft(_cleanItem(l.text))],
         confidence: 0.7,

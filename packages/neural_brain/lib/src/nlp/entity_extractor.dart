@@ -44,8 +44,14 @@ class Entities {
   final List<String> properNouns;
 
   bool get isEmpty =>
-      urls.isEmpty && emails.isEmpty && phones.isEmpty && hashtags.isEmpty && mentions.isEmpty &&
-      wikilinks.isEmpty && money.isEmpty && properNouns.isEmpty;
+      urls.isEmpty &&
+      emails.isEmpty &&
+      phones.isEmpty &&
+      hashtags.isEmpty &&
+      mentions.isEmpty &&
+      wikilinks.isEmpty &&
+      money.isEmpty &&
+      properNouns.isEmpty;
 }
 
 /// Regex based entity extraction (no models required, runs in microseconds).
@@ -63,7 +69,9 @@ class EntityExtractor {
     caseSensitive: false,
   );
   static final RegExp _email = RegExp(r'[\w.+-]+@[\w-]+(?:\.[\w-]+)+');
-  static final RegExp _phone = RegExp(r'(?<![\w/.])(?:\+\d{1,3}[\s.-]?)?(?:\(?\d{2,4}\)?[\s.-]?)\d{3,4}[\s.-]?\d{3,4}(?![\w/])');
+  static final RegExp _phone = RegExp(
+    r'(?<![\w/.])(?:\+\d{1,3}[\s.-]?)?(?:\(?\d{2,4}\)?[\s.-]?)\d{3,4}[\s.-]?\d{3,4}(?![\w/])',
+  );
   static final RegExp _hashtag = RegExp(r'(?<![\w&#])#([\p{L}][\p{L}\d_-]{0,39})', unicode: true);
   static final RegExp _mention = RegExp(r'(?<![\w@.])@([\p{L}][\p{L}\d_.]{1,29})', unicode: true);
   static final RegExp _wiki = RegExp(r'\[\[([^\]\n]{1,80})\]\]');
@@ -73,11 +81,50 @@ class EntityExtractor {
   );
 
   static const Set<String> _notProper = {
-    'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday', 'january',
-    'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october',
-    'november', 'december', 'lunedi', 'martedi', 'mercoledi', 'giovedi', 'venerdi', 'sabato',
-    'domenica', 'gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto',
-    'settembre', 'ottobre', 'novembre', 'dicembre', 'idea', 'note', 'todo', 'remind', 'buy', 'call',
+    'monday',
+    'tuesday',
+    'wednesday',
+    'thursday',
+    'friday',
+    'saturday',
+    'sunday',
+    'january',
+    'february',
+    'march',
+    'april',
+    'may',
+    'june',
+    'july',
+    'august',
+    'september',
+    'october',
+    'november',
+    'december',
+    'lunedi',
+    'martedi',
+    'mercoledi',
+    'giovedi',
+    'venerdi',
+    'sabato',
+    'domenica',
+    'gennaio',
+    'febbraio',
+    'marzo',
+    'aprile',
+    'maggio',
+    'giugno',
+    'luglio',
+    'agosto',
+    'settembre',
+    'ottobre',
+    'novembre',
+    'dicembre',
+    'idea',
+    'note',
+    'todo',
+    'remind',
+    'buy',
+    'call',
   };
 
   Entities extract(String text) {
@@ -98,7 +145,10 @@ class EntityExtractor {
     for (final m in _phone.allMatches(text)) {
       final digits = m.group(0)!.replaceAll(RegExp(r'\D'), '');
       final hasSeparatorOrPlus = RegExp(r'[\s.\-+()]').hasMatch(m.group(0)!);
-      if (digits.length >= 8 && digits.length <= 15 && hasSeparatorOrPlus && !RegExp(r'^\d{1,2}[/.\-]\d{1,2}').hasMatch(m.group(0)!)) {
+      if (digits.length >= 8 &&
+          digits.length <= 15 &&
+          hasSeparatorOrPlus &&
+          !RegExp(r'^\d{1,2}[/.\-]\d{1,2}').hasMatch(m.group(0)!)) {
         phones.add(m.group(0)!.trim());
       }
     }
@@ -119,7 +169,10 @@ class EntityExtractor {
     final out = <String>[];
     final quoted = _quoted.allMatches(text).toList();
     bool inQuote(int pos) => quoted.any((q) => pos > q.start && pos < q.end);
-    final words = RegExp(r"[\p{L}][\p{L}'’-]*", unicode: true).allMatches(text).where((m) => !inQuote(m.start)).toList();
+    final words = RegExp(
+      r"[\p{L}][\p{L}'’-]*",
+      unicode: true,
+    ).allMatches(text).where((m) => !inQuote(m.start)).toList();
     var run = <String>[];
     void flush() {
       if (run.isNotEmpty) out.add(run.join(' '));
@@ -134,7 +187,8 @@ class EntityExtractor {
       final allCaps = w.length > 1 && w == w.toUpperCase();
       final before = text.substring(0, m.start).trimRight();
       final sentenceStart = before.isEmpty || RegExp(r'[.!?:\n•\-*]$').hasMatch(before) || before.endsWith('\n');
-      final ok = upperFirst &&
+      final ok =
+          upperFirst &&
           !allCaps &&
           folded.length > 1 &&
           !allStopwords.contains(folded) &&

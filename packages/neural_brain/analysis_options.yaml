@@ -19,3 +19,7 @@ linter:
     - always_declare_return_types
     - sort_child_properties_last
     - require_trailing_commas
+
+formatter:
+  page_width: 120
+  trailing_commas: preserve
