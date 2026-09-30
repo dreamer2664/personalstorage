@@ -75,6 +75,7 @@ expose notes. Tapping a widget or control shows the normal unlock step first.
 | Android: `flutter build apk --debug` (AGP 9.1, Gradle 9.3, JDK 21) compiles the Kotlin and merges manifests | **Verified** |
 | Android merged manifest contains the tile service, widget receiver + provider metadata, shortcuts resource, share/deep-link filters, speech `<queries>`, notification receivers, permissions | **Verified** (inspected with `aapt2`) |
 | Deep-link routing for warm and cold starts, share text into composer, graceful no-speech-engine | **Verified** by widget tests |
-| iOS `Info.plist` edits; Ruby script adds the widget target, is idempotent, yields a well-formed project | **Verified** (run against the real `project.pbxproj`, which is left untouched) |
+| iOS: `flutter build ios --no-codesign` succeeds on a macOS GitHub runner | **Verified** (CI) |
+| iOS: `tool/ios/add_widget_extension.rb` adds the target (idempotent); `xcodebuild` **compiles the Swift WidgetKit extension**; the whole app builds with the extension embedded, no dependency cycle | **Verified** (CI, every push) |
 | Android tile / widget / shortcut / share behaviour on a device or emulator | **Not verified** (no emulator in the build environment) |
-| Anything iOS at runtime, including Swift compilation of the widget extension | **Not verified** (no Xcode) |
+| iOS runtime behaviour: widgets/controls on a lock screen, deep link handling, dictation, reminders | **Not verified** (CI compiles and links; no simulator or device was run) |

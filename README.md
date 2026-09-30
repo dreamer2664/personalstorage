@@ -143,14 +143,14 @@ Everything below was actually run, except where marked otherwise.
 | `neural_brain`: 147 tests incl. **token-id parity with the Python Model2Vec reference** and quality gates | ✅ passing |
 | App: 73 tests — real SQLite/FTS5 + real model; widget flows (capture → chips → save → undo, search, tasks, detail, settings, deep links incl. cold start), graph controller/painter, design system incl. 2.4× text | ✅ passing |
 | Web build driven end-to-end in headless Chromium through accessibility labels (screenshots above) | ✅ done |
-| Android `flutter build apk --debug`; merged manifest inspected (tile, widget, shortcuts, share/deep-link filters, receivers, permissions) | ✅ builds |
-| iOS Info.plist changes; `add_widget_extension.rb` run against the real project file (idempotent, well-formed) | ✅ checked |
+| Android `flutter build apk --debug` (locally and in CI); merged manifest inspected (tile, widget, shortcuts, share/deep-link filters, receivers, permissions) | ✅ builds |
+| iOS on a macOS GitHub runner: `flutter build ios --no-codesign`; `add_widget_extension.rb` adds the target; **the Swift WidgetKit extension compiles** (`xcodebuild`, simulator SDK); the whole app builds with it embedded (no dependency cycle) | ✅ CI green |
+| CI on GitHub (clean machines): format, analyze, codegen freshness, 147 + 73 tests, web, Android, iOS | ✅ all jobs green |
 | Category accuracy on unseen notes | ≈ 80–85 % (first-run 82 % on a fresh 28-note set; see [AI engine](docs/AI_ENGINE.md#accuracy-measured-and-how-to-read-it)) |
 | Android tile / widget / share / reminders **on a device or emulator** | ⚠️ not verified (no emulator available) |
-| **Anything iOS at runtime**, incl. compiling the Swift widget extension | ⚠️ not verified (no Xcode) |
+| **iOS at runtime** (widgets on a lock screen, deep-link handling, dictation, reminders) | ⚠️ not verified: CI proves it compiles and links, no simulator/device was run |
 | Real dictation, camera/photo picker, notification delivery | ⚠️ not verified on hardware (platform plugins; the no-speech-engine path is tested) |
 | 60 fps on a physical phone | ⚠️ not profiled; the design targets it (repaint-only animation, 1.1 ms layout tick) |
-| GitHub Actions workflow | ⚠️ syntax-validated; see the Actions tab for its first real run |
 
 ## Privacy
 

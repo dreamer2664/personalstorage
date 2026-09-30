@@ -19,4 +19,4 @@ cluster sheets, connection-strength slider, tag hubs.
 and iOS 18 controls (opt-in target), iOS quick actions.
 
 **Engineering** - Flutter + drift/SQLite/FTS5 + Riverpod, pure-Dart `neural_brain` package, 220+ tests, CI for
-format/analyze/test/web/Android (iOS informational), ADRs and architecture docs.
+format/analyze/test and web/Android/iOS builds (incl. the Swift widget extension), ADRs and architecture docs.

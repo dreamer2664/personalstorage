@@ -22,7 +22,7 @@ flutter analyze && (cd packages/neural_brain && dart analyze)
 flutter test                                   # ~75 tests, ~20 s
 ```
 
-CI runs exactly this, verifies that generated code is up to date, and builds web and Android.
+CI runs exactly this, verifies that generated code is up to date, and builds web, Android and iOS (including the opt-in WidgetKit extension).
 
 ## Where things go
 

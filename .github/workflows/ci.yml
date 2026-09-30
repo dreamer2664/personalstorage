@@ -93,9 +93,6 @@ jobs:
     needs: quality
     runs-on: macos-latest
     timeout-minutes: 40
-    # The iOS target could not be compiled where this project was developed (Linux, no Xcode), so
-    # this job is informational until it has been seen green once. Remove the next line then.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2

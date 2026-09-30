@@ -9,5 +9,7 @@ compile error in an embedded extension would break *every* iOS build.
 idempotent script (`tool/ios/add_widget_extension.rb`, tested against the real project file) adds the target.
 
 **Consequences.** `flutter run` on iOS always works; the lock-screen widgets cost one documented command and a
-signing choice. CI builds iOS (non-blocking) and verifies the script; once it has been seen green on a Mac the
-script can be run by default.
+signing choice. CI builds iOS on every push, runs the script, compiles the extension with `xcodebuild` and builds
+the whole app with it embedded - all seen green, so the original *compile* risk is retired. The target stays
+opt-in for a different reason now: it needs its own provisioning (a Team selected for both targets), which
+would add friction to a first `flutter run` on a device.
