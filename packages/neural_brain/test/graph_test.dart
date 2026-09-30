@@ -87,12 +87,12 @@ void main() {
       );
       expect(g.nodes.where((n) => n.type == GraphNodeType.tag).map((n) => n.label), ['#lisbon']);
       expect(g.edges.every((e) => e.kind == GraphEdgeKind.tag), isTrue);
-      expect(g.clusters.single.label, 'lisbon');
+      expect(g.clusters.single.label, 'Lisbon');
     });
 
     test('cluster labels prefer shared tags, then category', () {
       final g = twoCliques();
-      expect(g.clusters.map((c) => c.label).toSet(), {'alpha', 'beta'});
+      expect(g.clusters.map((c) => c.label).toSet(), {'Alpha', 'Beta'});
     });
 
     test('neighborsOf walks adjacency', () {

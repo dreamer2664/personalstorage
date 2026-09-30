@@ -42,7 +42,7 @@ class GraphPainter extends CustomPainter {
       text: TextSpan(
         text: text,
         style: (cluster ? PsText.headline(color) : PsText.caption(color)).copyWith(
-          fontSize: cluster ? 15 : 11.5,
+          fontSize: cluster ? 13 : 11.5,
           fontWeight: bold || cluster ? FontWeight.w700 : FontWeight.w500,
           shadows: [
             Shadow(color: ps.background.withValues(alpha: 0.95), blurRadius: 4),
@@ -126,7 +126,7 @@ class GraphPainter extends CustomPainter {
     }
     final base = ps.isDark ? const Color(0xFFFFFFFF) : const Color(0xFF3C3C43);
     final dim = hasSel ? 0.35 : 1.0;
-    const alphas = [0.10, 0.18, 0.30];
+    const alphas = [0.14, 0.24, 0.38];
     const widths = [0.9, 1.3, 1.9];
     for (var i = 0; i < 3; i++) {
       if (buckets[i].isEmpty) continue;
@@ -184,46 +184,61 @@ class GraphPainter extends CustomPainter {
 
   void _labels(Canvas canvas, KnowledgeGraph g, ForceLayout l, double s, Size size) {
     final screen = Offset.zero & size;
-    // Cluster names when zoomed out: they act as tappable "islands".
-    if (s < 1.05) {
-      for (final k in g.clusters) {
-        if (k.size < 3) continue;
+    // Everything drawn here reserves its rectangle in [placed]; later items that would overlap an
+    // earlier one are skipped. Priority order: cluster pills, selection + neighbours, hubs, rest.
+    final placed = <Rect>[];
+    bool free(Rect r) {
+      for (final q in placed) {
+        if (q.overlaps(r)) return false;
+      }
+      return true;
+    }
+
+    final hasSel = c.selected >= 0;
+
+    // 1. Cluster names when zoomed out: tappable "islands", biggest first, never overlapping.
+    if (s < 1.05 && !hasSel) {
+      final clusters = g.clusters.where((k) => k.size >= 3).toList()..sort((a, b) => b.size.compareTo(a.size));
+      for (final k in clusters) {
         var cx = 0.0, top = double.infinity;
         for (final i in k.nodeIndices) {
           cx += l.x[i];
           top = math.min(top, l.y[i] - l.radius[i]);
         }
         cx /= k.size;
-        final p = c.worldToScreen(cx, top - 16);
+        final p = c.worldToScreen(cx, top - 18);
         if (!screen.inflate(40).contains(p)) continue;
-        final tp = _label(k.label, bold: true, cluster: true, color: categoryStyle(k.categoryId).color);
-        final rect = Rect.fromCenter(center: p, width: tp.width + 20, height: tp.height + 10);
-        final rr = RRect.fromRectAndRadius(rect, const Radius.circular(14));
-        _fill.color = ps.glassFillStrong.withValues(alpha: c.selected >= 0 ? 0.5 : 0.92);
+        final color = categoryStyle(k.categoryId).color;
+        final tp = _label(k.label, bold: true, cluster: true, color: ps.label);
+        final rect = Rect.fromCenter(center: p, width: tp.width + 34, height: tp.height + 10);
+        if (!free(rect.inflate(6))) continue;
+        placed.add(rect.inflate(6));
+        final rr = RRect.fromRectAndRadius(rect, const Radius.circular(15));
+        _fill.color = ps.glassFillStrong.withValues(alpha: 0.94);
         canvas.drawRRect(rr, _fill);
         _stroke
           ..color = ps.glassBorder
           ..strokeWidth = 0.8;
         canvas.drawRRect(rr, _stroke);
-        tp.paint(canvas, rect.topLeft + const Offset(10, 5));
+        _fill.color = color;
+        canvas.drawCircle(Offset(rect.left + 13, rect.center.dy), 4, _fill);
+        tp.paint(canvas, Offset(rect.left + 24, rect.top + 5));
         c.clusterHitBoxes.add((rect.inflate(6), k.index));
       }
     }
-    // Node labels: level of detail + greedy collision avoidance. Candidates are placed in
-    // priority order (selection, its neighbours, then well-connected / important nodes); a label
-    // that would overlap an already placed one is simply skipped, so the picture stays readable
-    // at any zoom instead of turning into a wall of text.
-    final hasSel = c.selected >= 0;
+
+    // 2. Node labels: level of detail + greedy collision avoidance.
     final candidates = <(int, double)>[];
     for (var i = 0; i < g.nodes.length; i++) {
       final node = g.nodes[i];
       final important = i == c.selected || (hasSel && c.neighborhood.contains(i));
       if (hasSel && !important) continue; // a selection focuses attention: hide the rest
+      final hub = node.degree >= 4 && node.type == GraphNodeType.note;
       final show =
           important ||
-          s >= 1.25 ||
-          (s >= 0.85 && (l.radius[i] >= 7.5 || node.type == GraphNodeType.tag)) ||
-          (s >= 0.55 && node.degree >= 4 && node.type == GraphNodeType.note);
+          s >= 1.6 ||
+          (s >= 1.0 && (l.radius[i] >= 8.5 || node.degree >= 3 || node.type == GraphNodeType.tag)) ||
+          (s >= 0.5 && hub);
       if (!show) continue;
       final p = c.worldToScreen(l.x[i], l.y[i]);
       if (!screen.inflate(60).contains(p)) continue;
@@ -231,24 +246,18 @@ class GraphPainter extends CustomPainter {
       candidates.add((i, priority));
     }
     candidates.sort((a, b) => b.$2.compareTo(a.$2));
-    final placed = <Rect>[];
+    var drawn = 0;
     for (final (i, _) in candidates) {
-      if (placed.length >= 140) break;
+      if (drawn >= 140) break;
       final node = g.nodes[i];
       final p = c.worldToScreen(l.x[i], l.y[i]);
       final r = l.radius[i] * s;
       final tp = _label(node.label, bold: i == c.selected, cluster: false, color: ps.label);
       final rect = Rect.fromLTWH(p.dx - tp.width / 2, p.dy + r + 3, tp.width, tp.height);
-      final probe = rect.inflate(2);
-      var clash = false;
-      for (final q in placed) {
-        if (q.overlaps(probe)) {
-          clash = true;
-          break;
-        }
-      }
-      if (clash && i != c.selected) continue;
+      final probe = rect.inflate(3);
+      if (!free(probe) && i != c.selected) continue;
       placed.add(probe);
+      drawn++;
       tp.paint(canvas, rect.topLeft);
     }
   }

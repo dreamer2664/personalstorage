@@ -132,7 +132,8 @@ async def main():
         async def graph_flow():
             await shot("14-graph-selected")
             await tap_xy(195, 352, wait=800)           # tap the focused node again: selection card stays
-            await tap("Fit to screen", wait=2500)
+            await tap_xy(22, 330, wait=600)            # tap empty canvas: selection clears
+            await tap("Fit to screen", wait=3000)
             await shot("15-graph-overview")
             await page.mouse.move(195, 420)
             for _ in range(4):

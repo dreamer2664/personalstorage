@@ -44,6 +44,7 @@ class GraphBuilder {
     bool includeTagNodes = false,
     int minTagNotes = 2,
     String Function(String categoryId)? categoryLabel,
+    String? Function(String tag)? tagLabel,
   }) {
     final nodes = <GraphNode>[
       for (final n in notes) GraphNode(id: n.id, label: n.label, categoryId: n.categoryId, importance: n.importance),
@@ -105,9 +106,15 @@ class GraphBuilder {
         for (var i = 0; i < nodes.length; i++)
           if (membership[i] == c) i,
       ];
-      clusters.add(_describe(c, members, nodes, notes, index, categoryLabel));
+      clusters.add(_describe(c, members, nodes, notes, index, categoryLabel, tagLabel));
     }
     return KnowledgeGraph(nodes, list, clusters);
+  }
+
+  /// `sales-clients` -> `Sales clients`.
+  static String _pretty(String slug) {
+    final s = slug.replaceAll(RegExp(r'[-_]+'), ' ').trim();
+    return s.isEmpty ? slug : s[0].toUpperCase() + s.substring(1);
   }
 
   static GraphCluster _describe(
@@ -117,6 +124,7 @@ class GraphBuilder {
     List<GraphNoteInput> notes,
     Map<String, int> index,
     String Function(String)? categoryLabel,
+    String? Function(String)? tagLabel,
   ) {
     final tagCount = <String, int>{};
     final catCount = <String, int>{};
@@ -140,7 +148,9 @@ class GraphBuilder {
 
     final cat = topOf(catCount);
     final tag = topOf(tagCount, min: 2);
-    final label = tag ?? (cat != null ? (categoryLabel?.call(cat) ?? cat) : 'Cluster ${c + 1}');
+    final label = tag != null
+        ? (tagLabel?.call(tag) ?? _pretty(tag))
+        : (cat != null ? (categoryLabel?.call(cat) ?? _pretty(cat)) : 'Cluster ${c + 1}');
     return GraphCluster(c, members, label, cat);
   }
 }

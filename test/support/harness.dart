@@ -94,7 +94,7 @@ class Harness {
       enrichment: enrichment,
       capture: capture,
       search: SearchService(repo: repo, brain: brain),
-      graph: GraphService(repo),
+      graph: GraphService(repo, ontology: brain.brain.ontology),
       reminders: reminders,
       media: media,
     );

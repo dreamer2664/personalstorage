@@ -4,9 +4,12 @@ import '../data/repositories/note_repository.dart';
 
 /// Builds the [KnowledgeGraph] shown in the Graph tab from stored notes and edges.
 class GraphService {
-  GraphService(this.repo);
+  GraphService(this.repo, {this.ontology});
 
   final NoteRepository repo;
+
+  /// Lets clusters be named after ontology concepts ("Clients & sales") instead of raw tag slugs.
+  final Ontology? ontology;
 
   /// [minWeight] is the "connection strength" slider; [tagHubs] adds tag nodes.
   Future<KnowledgeGraph> load({
@@ -40,6 +43,7 @@ class GraphService {
       minWeight: minWeight,
       includeTagNodes: tagHubs,
       categoryLabel: categoryLabel,
+      tagLabel: (tag) => ontology?[tag.replaceAll('-', '_')]?.labelEn,
     );
   }
 }

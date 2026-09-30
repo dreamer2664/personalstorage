@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The project is developed and verified against this exact Flutter release (Dart 3.13).
+  FLUTTER_VERSION: 3.47.5
+
+jobs:
+  quality:
+    name: Format, analyze, test
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Resolve dependencies
+        run: |
+          flutter pub get
+          cd packages/neural_brain && dart pub get
+      - name: Format (generated *.g.dart files are excluded)
+        run: dart format --output=none --set-exit-if-changed $(git ls-files '*.dart' | grep -v '\.g\.dart$')
+      - name: Analyze app
+        run: flutter analyze
+      - name: Analyze neural_brain
+        run: cd packages/neural_brain && dart analyze
+      - name: Generated code is up to date
+        run: |
+          dart run build_runner build
+          git diff --exit-code -- 'lib/**/*.g.dart'
+      - name: "Test neural_brain (pure Dart: NLP, embeddings, search, graph)"
+        run: cd packages/neural_brain && dart test --reporter github
+      - name: Test app (widget flows on in-memory SQLite + the real model)
+        run: flutter test --reporter github
+
+  web:
+    name: Build web
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build web --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-build
+          path: build/web
+          retention-days: 7
+
+  android:
+    name: Build Android (debug APK)
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build apk --debug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 7
+
+  ios:
+    name: Build iOS (no codesign)
+    needs: quality
+    runs-on: macos-latest
+    timeout-minutes: 40
+    # The iOS target could not be compiled where this project was developed (Linux, no Xcode), so
+    # this job is informational until it has been seen green once. Remove the next line then.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - run: flutter build ios --debug --no-codesign
+      - name: WidgetKit extension wires into the project
+        run: |
+          ruby tool/ios/add_widget_extension.rb
+          xcodebuild -list -project ios/Runner.xcodeproj | grep PersonalStorageWidgets
