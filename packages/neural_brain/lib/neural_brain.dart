@@ -26,5 +26,6 @@ export 'src/nlp/priority_scorer.dart';
 export 'src/ontology/concept_mapper.dart';
 export 'src/ontology/default_ontology.dart' show defaultOntologyVersion;
 export 'src/ontology/ontology.dart';
+export 'src/sample/sample_corpus.dart';
 export 'src/text/language.dart';
 export 'src/text/tokenizer.dart' show Token, Tokenizer;
