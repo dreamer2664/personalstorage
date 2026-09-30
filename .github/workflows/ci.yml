@@ -109,3 +109,10 @@ jobs:
         run: |
           ruby tool/ios/add_widget_extension.rb
           xcodebuild -list -project ios/Runner.xcodeproj | grep PersonalStorageWidgets
+      - name: Compile the WidgetKit extension (Swift, simulator SDK)
+        run: |
+          xcodebuild -project ios/Runner.xcodeproj -target PersonalStorageWidgets \
+            -sdk iphonesimulator -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+      - name: Whole app builds with the extension embedded (no dependency cycle)
+        run: flutter build ios --debug --no-codesign
